@@ -87,7 +87,7 @@ pre.code-block { margin: 0; padding: 12px 14px; background: var(--dark); color: 
 .spacer { flex: 1; }
 .load-note { font-size: 13.5px; color: var(--muted); }
 
-.editor { position: relative; display: grid; grid-template-columns: auto minmax(0, 1fr); height: 330px; background: var(--dark); border: 1px solid #0a1513; border-radius: 12px; overflow: hidden; }
+.editor { position: relative; display: grid; grid-template-columns: auto minmax(0, 1fr); height: 300px; background: var(--dark); border: 1px solid #0a1513; border-radius: 12px; overflow: hidden; }
 .gutter { position: relative; overflow: hidden; background: var(--dark-2); border-right: 1px solid var(--dark-line); min-width: 48px; user-select: none; }
 .gutter-inner { padding: 12px 0; will-change: transform; }
 .gutter .ln { position: relative; height: 21px; padding: 0 10px 0 16px; font: 13px/21px var(--font-mono); color: #4a665e; text-align: right; }
@@ -115,6 +115,17 @@ textarea#code::selection { background: rgba(111, 211, 255, .3); color: transpare
 .t-b { color: var(--syn-bi); }
 .t-d { color: var(--syn-def); }
 
+.tools { display: flex; flex-wrap: wrap; gap: 3px 14px; font-size: 14px; color: var(--ink-2); }
+.tools .tl { color: var(--muted); }
+.vars { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; min-height: 38px; padding: 6px 10px; border: 1px solid var(--line); border-radius: 10px; font-size: 13.5px; }
+.vars .vl { color: var(--muted); font-weight: 700; margin-right: 2px; }
+.vars .scope { color: var(--muted); font-size: 12.5px; margin-left: 4px; }
+.vars .none { color: var(--muted); }
+.var { font: 13px/1.4 var(--font-mono); padding: 2px 8px; border-radius: 6px; background: var(--paper); white-space: nowrap; }
+.var b { color: var(--water); font-weight: 600; }
+.var.changed { background: #fff0c2; box-shadow: inset 0 0 0 1px #e5bf55; }
+.var .was { color: var(--muted); font-size: 11.5px; margin-left: 5px; }
+.log .row.step { display: none !important; }
 .now { display: flex; align-items: center; gap: 10px; min-height: 38px; padding: 7px 12px; border-radius: 10px; background: var(--paper); font-size: 14.5px; }
 .now .pulse { flex: none; width: 9px; height: 9px; border-radius: 50%; background: #9fb7ad; }
 .now.run .pulse { background: #2a9fd6; box-shadow: 0 0 0 4px rgba(42, 159, 214, .2); }
@@ -130,7 +141,7 @@ textarea#code::selection { background: rgba(111, 211, 255, .3); color: transpare
 .log-head b { color: var(--ink); font-size: 14px; }
 .switch { display: inline-flex; align-items: center; gap: 7px; cursor: pointer; user-select: none; }
 .switch input { accent-color: var(--water); width: 15px; height: 15px; }
-.log { background: var(--dark); color: var(--dark-ink); border-radius: 12px; height: 170px; overflow: auto; font: 12.5px/1.6 var(--font-mono); padding: 6px 0; scrollbar-color: #2c4640 transparent; }
+.log { background: var(--dark); color: var(--dark-ink); border-radius: 12px; height: 150px; overflow: auto; font: 12.5px/1.6 var(--font-mono); padding: 6px 0; scrollbar-color: #2c4640 transparent; }
 .log .row { display: grid; grid-template-columns: 8.6ch 3.4ch minmax(0, 1fr); gap: 8px; padding: 0 12px; cursor: pointer; }
 .log .row:hover { background: rgba(255, 255, 255, .04); }
 .log .row.cur { background: rgba(111, 211, 255, .13); }
@@ -237,6 +248,7 @@ dialog.dlg::backdrop { background: rgba(12, 28, 24, .5); backdrop-filter: blur(3
         </div>
       </div>
       <div class="now" id="now"><span class="pulse"></span><span class="lnum" id="nowLine"></span><span class="txt" id="nowText">Press Run and this shows which line is running.</span><span class="stale" id="nowStale" hidden>code changed since this run</span></div>
+      <div class="vars" id="vars" aria-live="off"><span class="vl">Variables</span><span class="none">Run your code to see its variables change, line by line.</span></div>
       <div class="log-head"><b>Output</b><label class="switch"><input type="checkbox" id="callsToggle" checked aria-label="Show every function call"> show every function call</label></div>
       <div class="log" id="log" aria-label="Output and function calls">
         <div id="logRows"></div>
@@ -300,7 +312,7 @@ const LEVELS = JSON.parse(document.getElementById("levels-data").textContent);
 const ENGINE = document.getElementById("engine-src").textContent;
 const PYODIDE_URL = "https://cdn.jsdelivr.net/pyodide/v0.26.4/full/";
 const START_CLOCK = 8, SAFE = 3, DEADLY = 8, FIRE = 100;
-const SEC_PER_HOUR = 1, CALL_DWELL = 0.36, GROUP_DWELL = 1.5, PRE_DWELL = 0.24;   // playback timing at 1x
+const SEC_PER_HOUR = 1, CALL_DWELL = 0.4, GROUP_DWELL = 2.4, PRE_DWELL = 0.24;   // playback timing at 1x
 const SPEEDS = [0.5, 1, 3, 10];
 const LH = 21, PAD = 12;   // editor line height and top padding (px)
 const POND_COL = { 1: "#1f6f9a", 2: "#7a4fb5" };
@@ -512,6 +524,15 @@ function renderLevels() {
   }).join("");
 }
 $("levels").addEventListener("click", (e) => { const b = e.target.closest(".lv"); if (b) selectLevel(Number(b.dataset.id)); });
+// the pond functions: listed with each question because calling them isn't the Python skill
+const TOOLS = {
+  pollution: ["pollution(pond)", "reads a pond's sensor"],
+  wait: ["wait()", "lets 3 hours pass"],
+  motor_on: ["motor_on()", "starts the aerator"],
+  motor_off: ["motor_off()", "stops it"],
+  motor_temp: ["motor_temp()", "the motor's temperature (°C)"],
+  switch_to: ["switch_to(pond)", "moves the air hose (motor off first)"],
+};
 function renderBrief() {
   const l = level;
   const prev = LEVELS.find((x) => x.id === l.id - 1);
@@ -520,6 +541,7 @@ function renderBrief() {
     '<div class="qmeta">Question ' + l.id + " of " + LEVELS.length + " · " + esc(l.topic) + "</div>" +
     "<h2>" + esc(l.title) + "</h2>" +
     '<p class="task">' + inline(l.task) + "</p>" +
+    '<div class="tools"><span class="tl">You can use:</span>' + l.uses.map((k) => "<span><code>" + TOOLS[k][0] + "</code> " + TOOLS[k][1] + "</span>").join("") + "</div>" +
     '<div class="qlinks"><button class="link" id="hintBtn" aria-expanded="false">Hint</button>' +
     (carry ? '<button class="link" id="carryBtn">Use my question ' + prev.id + " code</button>" : "") +
     '<button class="answer-link" id="answerBtn">' + ICON.lock + "Answer</button></div>" +
@@ -950,15 +972,46 @@ function callHtml(e) {
 function buildLog(d) {
   logRows.innerHTML = d.log.map((e, i) => {
     const head = '<span class="ts">' + shortClock(e.t) + '</span><span class="ln">' + (e.line || "") + "</span>";
+    if (e.k === "line") return '<div class="row step" data-i="' + i + '" hidden></div>';
     if (e.k === "print") return '<div class="row pr" data-i="' + i + '" hidden>' + head + '<span class="msg">' + (esc(e.text) || "&nbsp;") + "</span></div>";
     return '<div class="row call" data-i="' + i + '" hidden>' + head + '<span class="msg">' + callHtml(e) + "</span></div>";
   }).join("");
   PB.rows = Array.from(logRows.children); PB.shown = -1; PB.cur = -1;
+  // variables at each step: the engine only sends them when they change, so carry them forward
+  PB.snaps = []; let cur = null, prev = null;
+  d.log.forEach((e, i) => { if (e.vars) { prev = cur; cur = e.vars; } PB.snaps[i] = [cur, prev]; });
+  lastVars = null; renderVars(-1);
   $("logEmpty").hidden = true; $("logEnd").hidden = true;
-  if (!d.log.length) { $("logEmpty").hidden = false; $("logEmpty").textContent = "No function calls or prints yet."; }
+  if (!d.log.some((e) => e.k !== "line")) { $("logEmpty").hidden = false; $("logEmpty").textContent = "No function calls or prints yet."; }
+}
+let lastVars = null;
+function varChips(cur, prev) {
+  const names = Object.keys(cur);
+  return names.map((k) => {
+    const changed = !prev || prev[k] !== cur[k];
+    const was = prev && k in prev && prev[k] !== cur[k] ? '<span class="was">was ' + esc(prev[k]) + "</span>" : "";
+    return '<span class="var' + (changed ? " changed" : "") + '"><b>' + esc(k) + "</b> = " + esc(cur[k]) + was + "</span>";
+  }).join("");
+}
+function renderVars(i) {
+  if (i === lastVars) return;
+  lastVars = i;
+  const box = $("vars"), pair = PB.snaps && i >= 0 ? PB.snaps[i] : null;
+  let html = '<span class="vl">Variables</span>';
+  const cur = pair && pair[0], prev = pair && pair[1];
+  if (!cur || (!Object.keys(cur.g).length && !(cur.l && Object.keys(cur.l).length))) {
+    html += '<span class="none">' + (PB.data ? "none yet" : "Run your code to see its variables change, line by line.") + "</span>";
+  } else {
+    if (cur.f) {
+      html += '<span class="scope">inside ' + esc(cur.f) + "():</span>" + varChips(cur.l, prev && prev.f === cur.f ? prev.l : null);
+      if (Object.keys(cur.g).length) html += '<span class="scope">outside:</span>';
+    }
+    html += varChips(cur.g, prev ? prev.g : null);
+  }
+  box.innerHTML = html;
 }
 function clearLog() {
-  logRows.innerHTML = ""; PB.rows = []; PB.shown = -1; PB.cur = -1;
+  logRows.innerHTML = ""; PB.rows = []; PB.shown = -1; PB.cur = -1; PB.snaps = []; lastVars = null; renderVars(-1);
   $("logEnd").hidden = true; $("logEmpty").hidden = false;
   $("logEmpty").textContent = "Your prints and every function call show up here when you run. Click a line to jump to that moment.";
 }
@@ -975,6 +1028,7 @@ function updateLog(upto) {
   }
   // rows after the current one are hidden, so the bottom of the log is always "now"
   if (moved) logBox.scrollTop = logBox.scrollHeight;
+  renderVars(upto);
 }
 function showLogEnd() {
   const d = PB.data, r = d.result, el = $("logEnd");
@@ -1002,7 +1056,9 @@ $("callsToggle").addEventListener("change", (e) => { logBox.classList.toggle("ca
 
 // ---- "now running" strip and the highlighted line ----
 function callText(e) { return e.fn + "(" + e.args + ")" + (e.ret !== undefined ? " → " + retText(e) : ""); }
+function sourceLine(n) { return ((PB.codeAtRun || "").split("\n")[n - 1] || "").trim(); }
 function nowHtml(e, seg, simT) {
+  if (e.k === "line") return "running <code>" + esc(sourceLine(e.line)) + "</code>";
   if (e.k === "print") return "<code>print</code> shows: " + esc(e.text);
   const call = "<code>" + esc(callText(e)) + "</code> ";
   if (e.hours) {

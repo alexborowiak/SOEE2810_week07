@@ -61,7 +61,7 @@ CHECKS = {
     ],
     6: [
         ("answer", ANSWER, ("win", "win", "win")),
-        ("starter", STARTER, ("win", "lose", "lose")),
+        ("starter", STARTER, ("lose", "lose", "lose")),
         ("wrong_order", 'level = pollution(1)\nif level > 3:\n    print("warning")\nelif level > 6:\n    print("danger")\nelse:\n    print("ok")\n', ("lose", "win", "win")),
         ("two_ifs", 'level = pollution(1)\nif level > 6:\n    print("danger")\nif level > 3:\n    print("warning")\nelse:\n    print("ok")\n', ("lose", "win", "win")),
     ],
@@ -80,7 +80,7 @@ CHECKS = {
     ],
     9: [
         ("answer", ANSWER, ("win", "win")),
-        ("starter", STARTER, ("lose", "lose")),
+        ("starter", STARTER, ("lose", "win")),
         ("hard_coded", "motor_on()\nwait()\nmotor_off()\n", ("win", "lose")),
         ("check_after", "motor_on()\nwait()\nwhile pollution(1) > 3:\n    wait()\nmotor_off()\n", ("win", "lose")),
     ],

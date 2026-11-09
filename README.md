@@ -25,13 +25,14 @@ Nothing to install. Python runs in the browser with [Pyodide](https://pyodide.or
 | 13 | Write `clean(pond)` for two ponds | functions and loops |
 | 14 | Pond Rescue: 4 days, 3 storms, a toxic spill. Bonus: fewest motor hours | everything |
 
-Each question is checked automatically, some against more than one test case so hard-coding doesn't pass, with a specific message for each classic mistake: the motor catches fire, a pond is left too early, the hose is moved with the motor running (the farmer gets soaked), a loop has no `wait()` (time stops), or a typo (with "Did you mean...?").
+Each question says what to achieve, not how: the starter code is blank (except question 11, where fixing the given code is the point), and the pond functions it needs (`pollution()`, `wait()` and so on) are listed with it, because calling those isn't the Python skill. Each question is checked automatically, some against more than one test case so hard-coding doesn't pass, with a specific message for each classic mistake: the motor catches fire, a pond is left too early, the hose is moved with the motor running (the farmer gets soaked), a loop has no `wait()` (time stops), or a typo (with "Did you mean...?").
 
 ## Seeing what the code does
 
 After Run, the page replays the run:
 
 - The line that's running is highlighted in the editor: blue for a quick call, amber while `wait()` or `switch_to()` lets time pass.
+- The variables panel shows every variable's value at that moment and highlights what just changed (e.g. `i = 2`, was 1), including a function's own variables while it runs. Step (→) goes one line at a time.
 - Each call pops up beside what it touches in the animation, e.g. `pollution(1) → 4.2` at the pond's sensor.
 - The output log lists every print and every function call, with the pond time and line number. Click a line to jump there.
 - Pause, step one line at a time (→), scrub, change speed, or click the chart to jump to a moment. The chart marks the readings the code actually took, so students can compare them with the real pollution line.
