@@ -1,0 +1,1571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pond Rescue</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+/* Layout: the pond scene across the top, then code on the left and the function guide on the right. One fixed light theme. */
+:root {
+  --paper: #edf2ee;
+  --card: #ffffff;
+  --ink: #15302a;
+  --muted: #557069;
+  --line: #cddad3;
+  --water: #1f6f9a;
+  --pond2: #7a4fb5;
+  --ok: #2c8248;
+  --warn: #b86e0c;
+  --bad: #bf3a2b;
+  --font-display: "Fredoka", "Trebuchet MS", system-ui, sans-serif;
+  --font-body: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "Cascadia Code", Consolas, monospace;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--paper); color: var(--ink); font-family: var(--font-body); font-size: 16px; line-height: 1.5; }
+.wrap { max-width: 1180px; margin: 0 auto; padding: 18px 16px 40px; display: grid; gap: 16px; }
+header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 16px; }
+h1 { font-family: var(--font-display); font-weight: 600; font-size: 34px; line-height: 1.1; margin: 0; letter-spacing: 0.2px; text-wrap: balance; }
+header p { margin: 0; color: var(--muted); max-width: 70ch; }
+h2 { font-family: var(--font-display); font-weight: 600; font-size: 20px; margin: 0 0 8px; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; }
+.stage { overflow: hidden; }
+.scene-box { position: relative; background: #8fc3e0; }
+#scene { display: block; width: 100%; height: auto; aspect-ratio: 1000 / 440; }
+.statusbar { display: flex; flex-wrap: wrap; gap: 8px; padding: 10px 12px; border-top: 1px solid var(--line); align-items: center; }
+.chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; background: var(--paper); font-size: 14px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.chip b { font-weight: 700; }
+.chip.ok { background: #dcefe2; color: #1d5c33; }
+.chip.warn { background: #f8e7cc; color: #7a4808; }
+.chip.bad { background: #f6d8d3; color: #8a2419; }
+.chip .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+#chart { display: block; width: 100%; height: auto; aspect-ratio: 1000 / 170; border-top: 1px solid var(--line); background: #fbfcfb; }
+.result { margin: 0; padding: 12px 14px; border-top: 1px solid var(--line); font-size: 17px; display: flex; gap: 10px; align-items: flex-start; }
+.result .tag { font-family: var(--font-display); font-weight: 600; font-size: 14px; padding: 2px 10px; border-radius: 999px; flex: none; margin-top: 2px; }
+.result.idle .tag { background: var(--paper); color: var(--muted); }
+.result.win .tag { background: #dcefe2; color: #1d5c33; }
+.result.lose .tag { background: #f6d8d3; color: #8a2419; }
+.result.info .tag { background: #f8e7cc; color: #7a4808; }
+.work { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+@media (max-width: 860px) { .work { grid-template-columns: 1fr; } h1 { font-size: 28px; } }
+.editor-card { padding: 14px; display: grid; gap: 10px; }
+.toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+button { font: inherit; cursor: pointer; border-radius: 10px; border: 1px solid var(--line); background: var(--card); color: var(--ink); padding: 7px 14px; }
+button:hover:not(:disabled) { border-color: #9fb7ad; background: #f6faf7; }
+button:focus-visible, textarea:focus-visible { outline: 3px solid #8cc4e6; outline-offset: 2px; }
+button:disabled { opacity: 0.55; cursor: progress; }
+#runBtn { background: var(--water); border-color: var(--water); color: #fff; font-weight: 700; padding: 8px 18px; }
+#runBtn:hover:not(:disabled) { background: #185b80; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.seg button { border: 0; border-radius: 0; padding: 7px 11px; font-variant-numeric: tabular-nums; }
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button[aria-pressed="true"] { background: var(--ink); color: #fff; }
+.spacer { flex: 1; }
+.label { font-size: 14px; color: var(--muted); }
+.editor { display: grid; grid-template-columns: auto 1fr; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: #fbfcfb; height: 420px; }
+.gutter { margin: 0; padding: 12px 8px 12px 10px; text-align: right; color: #97aaa3; background: #f2f6f3; font-family: var(--font-mono); font-size: 14px; line-height: 21px; user-select: none; overflow: hidden; border-right: 1px solid var(--line); min-width: 40px; }
+.gutter span { display: block; padding: 0 4px; border-radius: 4px; }
+.gutter span.err { background: var(--bad); color: #fff; }
+textarea#code { margin: 0; border: 0; resize: none; padding: 12px; font-family: var(--font-mono); font-size: 14px; line-height: 21px; color: var(--ink); background: transparent; white-space: pre; overflow: auto; tab-size: 4; outline: none; height: 100%; }
+.console { font-family: var(--font-mono); font-size: 13px; background: #15302a; color: #d8ebe3; border-radius: 10px; padding: 10px 12px; min-height: 64px; max-height: 160px; overflow: auto; white-space: pre-wrap; }
+.console .t { color: #86b8a6; }
+.console .e { color: #ffb4a8; }
+.side { display: grid; gap: 16px; }
+.side .card { padding: 14px 16px; }
+.fn { display: grid; gap: 10px; margin: 0; }
+.fn div { display: grid; gap: 2px; }
+.fn dt { font-family: var(--font-mono); font-weight: 600; font-size: 14px; color: var(--water); }
+.fn dd { margin: 0; font-size: 15px; }
+.rules { margin: 12px 0 0; padding: 10px 12px; background: var(--paper); border-radius: 10px; font-size: 15px; display: grid; gap: 4px; }
+ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 6px; font-size: 15px; }
+code { font-family: var(--font-mono); font-size: 0.92em; background: #eef3f0; padding: 1px 5px; border-radius: 5px; }
+.keys { font-size: 13px; color: var(--muted); }
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Pond Rescue</h1>
+    <p>Two fish ponds, one aerator motor and four days of sewage spills. Write Python to keep both ponds clean without setting the motor on fire.</p>
+  </header>
+
+  <section class="card stage" aria-label="Pond simulation">
+    <div class="scene-box"><canvas id="scene" width="1000" height="440" aria-label="Animation of two ponds, the aerator motor and its temperature"></canvas></div>
+    <div class="statusbar" id="status" aria-live="off"></div>
+    <canvas id="chart" width="1000" height="170" aria-label="Chart of pollution in each pond and the motor temperature over time"></canvas>
+    <p class="result idle" id="result" aria-live="polite"><span class="tag">Ready</span><span id="resultText">Press Run to try the starter code.</span></p>
+  </section>
+
+  <section class="work">
+    <div class="card editor-card">
+      <div class="toolbar">
+        <button id="runBtn" disabled>Loading Python…</button>
+        <button id="stopBtn" disabled>Stop</button>
+        <span class="label">Speed</span>
+        <div class="seg" role="group" aria-label="Playback speed">
+          <button data-speed="1" aria-pressed="true">1×</button>
+          <button data-speed="3" aria-pressed="false">3×</button>
+          <button data-speed="10" aria-pressed="false">10×</button>
+        </div>
+        <button id="skipBtn" disabled>Skip to end</button>
+        <span class="spacer"></span>
+        <button id="resetBtn">Reset code</button>
+      </div>
+      <div class="editor">
+        <pre class="gutter" id="gutter" aria-hidden="true"></pre>
+        <textarea id="code" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" wrap="off" aria-label="Your Python code"></textarea>
+      </div>
+      <div class="keys">Tab indents, Shift+Tab un-indents, Ctrl+Enter (or ⌘+Enter) runs. Press Esc then Tab to leave the code box.</div>
+      <div class="console" id="console" aria-label="Output"><span class="t">Anything you print() shows up here, stamped with the pond time.</span></div>
+    </div>
+
+    <div class="side">
+      <div class="card">
+        <h2>Your functions</h2>
+        <dl class="fn">
+          <div><dt>pollution(pond)</dt><dd>Pollution in pond <code>1</code> or <code>2</code>. Below 3 is safe. Above 8 the fish die.</dd></div>
+          <div><dt>motor_temp()</dt><dd>Motor temperature in °C. At 100°C it catches fire.</dd></div>
+          <div><dt>motor_on()</dt><dd>Starts the motor. Air goes to one pond and cleans it. Heats up about 15°C an hour.</dd></div>
+          <div><dt>motor_off()</dt><dd>Stops the motor. Cools down about 8°C an hour.</dd></div>
+          <div><dt>switch_to(pond)</dt><dd>Moves the air hose to pond 1 or 2. Takes 3 hours. The motor must be off first!</dd></div>
+          <div><dt>wait()</dt><dd>Lets 3 hours pass. The sensors only update every 3 hours, so to wait longer use <code>wait(6)</code>, <code>wait(9)</code>…</dd></div>
+        </dl>
+        <div class="rules">
+          <div>The hose starts in pond 1. The motor starts off at 20°C.</div>
+          <div>Sewage builds up slowly. Toxic spills arrive suddenly and keep leaking for hours.</div>
+          <div>The run lasts 4 days. On screen, 1 second is 1 hour.</div>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Challenges</h2>
+        <ol class="steps">
+          <li>Run the starter code. What happens to pond 2?</li>
+          <li>Use a <code>for</code> loop to look after both ponds.</li>
+          <li>Keep an eye on <code>motor_temp()</code>. If it is too hot, switch off and use a <code>while</code> loop to wait until it cools down.</li>
+          <li>If a pond is bad, stay with it until it is safe, cooling the motor down in between. A toxic spill keeps leaking, so leave too early and it creeps past 8 while you are away.</li>
+          <li>Bonus: keep every fish alive using the motor for as few hours as you can.</li>
+        </ol>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script type="text/plain" id="engine-src">import math
+import sys
+import json
+
+# ---------------- scenario settings ----------------
+HOURS = 96            # 4 days, 1 hour per animation second
+AMBIENT = 15.0        # motor cools down to this
+START_TEMP = 20.0
+HEAT_PER_HOUR = 15.0  # motor running
+COOL_PER_HOUR = 8.0   # motor off
+FIRE_TEMP = 100.0
+SAFE = 3.0
+DEADLY = 8.0
+AERATE = 1.5          # pollution removed per hour by a running aerator
+SWITCH_HOURS = 3      # swapping the air hose to the other pond takes this long
+DECAY = 0.03          # natural clean-up per hour (fraction)
+BASE_INFLOW = 0.045   # background pollution per hour
+START_POLLUTION = {1: 1.5, 2: 1.5}
+
+# spills: (centre hour, width in hours, total pollution added)
+SPILLS = {
+    1: [(18, 6, 12.0)],
+    2: [(38, 5, 12.0), (62, 6, 8.0)],
+}
+
+
+# toxic spills: (hour, pond, instant jump, total that leaks out of the barrel afterwards, hours until the leak is worst)
+TOXIC = [(52, 1, 1.5, 16.0, 8.0)]
+
+
+def sewage_inflow(pond, t):
+    total = BASE_INFLOW
+    for c, s, a in SPILLS[pond]:
+        total += a / (s * math.sqrt(2 * math.pi)) * math.exp(-0.5 * ((t + 0.5 - c) / s) ** 2)
+    return total
+
+
+def toxic_inflow(pond, t):
+    total = 0.0
+    for h, p, jump, leak, tau in TOXIC:
+        if p == pond and t >= h:
+            x = t + 0.5 - h
+            total += leak * x / tau ** 2 * math.exp(-x / tau)
+    return total
+
+
+def inflow(pond, t):
+    return sewage_inflow(pond, t) + toxic_inflow(pond, t)
+
+
+class _SimOver(Exception):
+    pass
+
+
+class _Sprayed(Exception):
+    pass
+
+
+class _TimeFrozen(Exception):
+    pass
+
+
+class PondError(Exception):
+    """Mistakes in how the built-in functions are used."""
+
+
+class Sim:
+    def __init__(self):
+        self.t = 0
+        self.P = dict(START_POLLUTION)
+        self.temp = START_TEMP
+        self.motor = False
+        self.target = 1
+        self.motor_dead = False
+        self.fish_dead = {1: None, 2: None}
+        self.motor_hours = 0
+        self.switching = False
+        self.frames = []
+        self.events = []
+        self.prints = []
+        self.lines_since_tick = 0
+        self.calls_since_tick = 0
+        self._snapshot()
+
+    # ---- recording ----
+    def _snapshot(self):
+        self.frames.append({
+            "t": self.t,
+            "p1": round(self.P[1], 3),
+            "p2": round(self.P[2], 3),
+            "temp": round(self.temp, 2),
+            "motor": self.motor,
+            "target": self.target,
+            "dead1": self.fish_dead[1] is not None,
+            "dead2": self.fish_dead[2] is not None,
+            "fire": self.motor_dead,
+            "switching": self.switching,
+            "in1": round(sewage_inflow(1, self.t), 3),
+            "in2": round(sewage_inflow(2, self.t), 3),
+            "tx1": round(toxic_inflow(1, self.t), 3),
+            "tx2": round(toxic_inflow(2, self.t), 3),
+        })
+
+    def _update_snapshot(self):
+        # actions taken at the current hour change what the animation shows for it
+        self.frames.pop()
+        self._snapshot()
+
+    def event(self, kind, text):
+        self.events.append({"t": self.t, "kind": kind, "text": text})
+
+    # ---- physics ----
+    def hour(self):
+        running = self.motor and not self.motor_dead
+        for h, p, jump, leak, tau in TOXIC:
+            if h == self.t:
+                self.P[p] += jump
+                self.event("toxic", f"Toxic spill! A barrel of chemicals fell into pond {p}.")
+        for p in (1, 2):
+            aer = AERATE if (running and self.target == p) else 0.0
+            self.P[p] = max(0.0, self.P[p] + inflow(p, self.t) - DECAY * self.P[p] - aer)
+        if running:
+            self.temp += HEAT_PER_HOUR
+            self.motor_hours += 1
+        else:
+            self.temp = max(AMBIENT, self.temp - COOL_PER_HOUR)
+        self.t += 1
+        for p in (1, 2):
+            if self.fish_dead[p] is None and self.P[p] > DEADLY:
+                self.fish_dead[p] = self.t
+                self.event("fish", f"Pond {p}: pollution passed {DEADLY:g}. The fish didn't make it.")
+        if running and self.temp >= FIRE_TEMP:
+            self.motor_dead = True
+            self.motor = False
+            self.event("fire", f"The motor hit {FIRE_TEMP:g}°C and caught fire!")
+        self.lines_since_tick = 0
+        self.calls_since_tick = 0
+        self._snapshot()
+        if self.t >= HOURS:
+            raise _SimOver()
+
+    def tick_call(self):
+        self.calls_since_tick += 1
+        if self.calls_since_tick > 20000:
+            raise _TimeFrozen()
+
+
+def _check_pond(pond, fname):
+    if pond not in (1, 2):
+        raise PondError(f"{fname}({pond!r}): there are only ponds 1 and 2.")
+
+
+def make_builtins(sim):
+    def pollution(pond):
+        """Pollution in pond 1 or 2. Safe below 3, fish die above 8."""
+        _check_pond(pond, "pollution")
+        sim.tick_call()
+        return round(sim.P[pond], 1)
+
+    def motor_temp():
+        """Motor temperature in °C. It catches fire at 100."""
+        sim.tick_call()
+        return round(sim.temp)
+
+    def motor_on():
+        """Switch the motor on."""
+        sim.tick_call()
+        if sim.motor_dead:
+            return
+        if not sim.motor:
+            sim.motor = True
+            sim._update_snapshot()
+
+    def motor_off():
+        """Switch the motor off."""
+        sim.tick_call()
+        if sim.motor:
+            sim.motor = False
+            sim._update_snapshot()
+
+    def switch_to(pond):
+        """Send the motor's air to pond 1 or 2. The motor must be off."""
+        _check_pond(pond, "switch_to")
+        sim.tick_call()
+        if pond == sim.target:
+            return
+        if sim.motor and not sim.motor_dead:
+            sim.target = pond
+            sim._update_snapshot()
+            sim.event("spray", "You switched the air hose with the motor running. It whipped round and soaked the farmer!")
+            raise _Sprayed()
+        sim.target = pond
+        sim.switching = True
+        sim._update_snapshot()
+        try:
+            for _ in range(SWITCH_HOURS):
+                if _ == SWITCH_HOURS - 1:
+                    sim.switching = False
+                sim.hour()
+        finally:
+            sim.switching = False
+
+    def wait(hours=3):
+        """Let time pass. Sensors only update every 3 hours, so use wait() or wait(6), wait(9)..."""
+        if not isinstance(hours, int) or isinstance(hours, bool) or hours <= 0 or hours % 3 != 0:
+            raise PondError(f"wait({hours!r}): the sensors only update every 3 hours, so use wait(), wait(6), wait(9)...")
+        for _ in range(hours):
+            sim.hour()
+
+    return {
+        "pollution": pollution,
+        "motor_temp": motor_temp,
+        "motor_on": motor_on,
+        "motor_off": motor_off,
+        "switch_to": switch_to,
+        "wait": wait,
+    }
+
+
+class _PrintCatcher:
+    def __init__(self, sim):
+        self.sim = sim
+        self.buf = ""
+
+    def write(self, s):
+        self.buf += s
+        while "\n" in self.buf:
+            line, self.buf = self.buf.split("\n", 1)
+            if len(self.sim.prints) < 500:
+                self.sim.prints.append({"t": self.sim.t, "text": line})
+        return len(s)
+
+    def flush(self):
+        if self.buf:
+            if len(self.sim.prints) < 500:
+                self.sim.prints.append({"t": self.sim.t, "text": self.buf})
+            self.buf = ""
+
+
+USER_FILE = "<your code>"
+LINE_LIMIT = 300000
+
+
+def run_user_code(code):
+    sim = Sim()
+    result = {"outcome": None, "error": None, "error_line": None}
+    ns = {"__name__": "__main__"}
+    ns.update(make_builtins(sim))
+
+    try:
+        compiled = compile(code, USER_FILE, "exec")
+    except SyntaxError as e:
+        result["outcome"] = "error"
+        msg = e.msg
+        if "unindent" in msg or "indent" in msg:
+            msg += " (check the spaces at the start of the line)"
+        result["error"] = f"SyntaxError: {msg}"
+        result["error_line"] = e.lineno
+        return _pack(sim, result, finish=False)
+
+    def local_tracer(frame, event, arg):
+        if event == "line":
+            sim.lines_since_tick += 1
+            if sim.lines_since_tick > LINE_LIMIT:
+                raise _TimeFrozen()
+        return local_tracer
+
+    def global_tracer(frame, event, arg):
+        if frame.f_code.co_filename == USER_FILE:
+            return local_tracer
+        return None
+
+    old_stdout = sys.stdout
+    catcher = _PrintCatcher(sim)
+    sys.stdout = catcher
+    finish = True
+    try:
+        sys.settrace(global_tracer)
+        try:
+            exec(compiled, ns)
+        finally:
+            sys.settrace(None)
+    except _SimOver:
+        pass
+    except _Sprayed:
+        result["outcome"] = "sprayed"
+        finish = False
+    except _TimeFrozen:
+        result["outcome"] = "frozen"
+        result["error"] = ("Time stopped! Your code is going round a loop without ever calling wait(), "
+                           "so no time passes. Add a wait() inside the loop.")
+        sim.event("frozen", "Time stopped! No wait() in your loop.")
+        finish = False
+    except PondError as e:
+        result["outcome"] = "error"
+        result["error"] = str(e)
+        result["error_line"] = _user_line(e)
+        finish = False
+    except RecursionError as e:
+        result["outcome"] = "error"
+        result["error"] = "RecursionError: a function keeps calling itself."
+        result["error_line"] = _user_line(e)
+        finish = False
+    except Exception as e:  # student mistakes: NameError, TypeError, ...
+        result["outcome"] = "error"
+        result["error"] = f"{type(e).__name__}: {e}"
+        result["error_line"] = _user_line(e)
+        finish = False
+    finally:
+        catcher.flush()
+        sys.stdout = old_stdout
+
+    if result["error_line"] is not None and result["outcome"] == "error":
+        sim.event("error", f"Your code crashed on line {result['error_line']}.")
+    return _pack(sim, result, finish=finish)
+
+
+def _user_line(exc):
+    tb = exc.__traceback__
+    line = None
+    while tb is not None:
+        if tb.tb_frame.f_code.co_filename == USER_FILE:
+            line = tb.tb_lineno
+        tb = tb.tb_next
+    return line
+
+
+def _pack(sim, result, finish):
+    if finish and sim.t < HOURS:
+        # code finished early: the pond carries on with the motor as it was left
+        try:
+            while sim.t < HOURS:
+                sim.hour()
+        except _SimOver:
+            pass
+    if result["outcome"] is None:
+        alive = [p for p in (1, 2) if sim.fish_dead[p] is None]
+        result["outcome"] = "win" if len(alive) == 2 else "lose"
+    result["fish_dead"] = sim.fish_dead
+    result["motor_hours"] = sim.motor_hours
+    result["motor_dead"] = sim.motor_dead
+    result["hours"] = sim.t
+    return json.dumps({
+        "frames": sim.frames,
+        "events": sim.events,
+        "prints": sim.prints,
+        "result": result,
+        "settings": {"hours": HOURS, "safe": SAFE, "deadly": DEADLY, "fire": FIRE_TEMP},
+    })
+</script>
+<script>
+(function () {
+"use strict";
+
+const PYODIDE_URL = "https://cdn.jsdelivr.net/pyodide/v0.26.4/full/";
+const HOURS = 96, SAFE = 3, DEADLY = 8, FIRE = 100, START_CLOCK = 8;
+const STARTER = [
+  "# Your code controls the aerator motor.",
+  "# Right now it only looks after pond 1.",
+  "# Press Run and watch what happens!",
+  "",
+  "while True:",
+  "    if pollution(1) > 3:",
+  "        motor_on()",
+  "    else:",
+  "        motor_off()",
+  "    wait()",
+  ""
+].join("\n");
+const STORE_KEY = "pond-rescue-code-v1";
+
+const els = {
+  scene: document.getElementById("scene"),
+  chart: document.getElementById("chart"),
+  status: document.getElementById("status"),
+  result: document.getElementById("result"),
+  resultText: document.getElementById("resultText"),
+  run: document.getElementById("runBtn"),
+  stop: document.getElementById("stopBtn"),
+  skip: document.getElementById("skipBtn"),
+  reset: document.getElementById("resetBtn"),
+  code: document.getElementById("code"),
+  gutter: document.getElementById("gutter"),
+  console: document.getElementById("console"),
+};
+const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+// ---------------------------------------------------------------- editor
+function loadCode() {
+  try { const c = localStorage.getItem(STORE_KEY); if (c) return c; } catch (e) {}
+  return STARTER;
+}
+function saveCode() { try { localStorage.setItem(STORE_KEY, els.code.value); } catch (e) {} }
+let errLine = null;
+function renderGutter() {
+  const n = els.code.value.split("\n").length;
+  let html = "";
+  for (let i = 1; i <= n; i++) html += '<span' + (i === errLine ? ' class="err"' : '') + '>' + i + '</span>';
+  els.gutter.innerHTML = html;
+  els.gutter.scrollTop = els.code.scrollTop;
+}
+els.code.value = loadCode();
+renderGutter();
+els.code.addEventListener("input", () => { errLine = null; renderGutter(); saveCode(); });
+els.code.addEventListener("scroll", () => { els.gutter.scrollTop = els.code.scrollTop; });
+let escPressed = false;
+els.code.addEventListener("keydown", (e) => {
+  const ta = els.code;
+  if (e.key === "Escape") { escPressed = true; return; }
+  if ((e.ctrlKey || e.metaKey) && e.key === "Enter") { e.preventDefault(); startRun(); return; }
+  if (e.key === "Tab") {
+    if (escPressed) { escPressed = false; return; }
+    e.preventDefault();
+    const v = ta.value, s = ta.selectionStart, en = ta.selectionEnd;
+    const lineStart = v.lastIndexOf("\n", s - 1) + 1;
+    if (s === en && !e.shiftKey) {
+      insertText("    ");
+    } else {
+      const lineEndIdx = v.indexOf("\n", en - (en > s && v[en - 1] === "\n" ? 1 : 0));
+      const blockEnd = lineEndIdx === -1 ? v.length : lineEndIdx;
+      const block = v.slice(lineStart, blockEnd);
+      const lines = block.split("\n");
+      let newLines, firstDelta, total = 0;
+      if (e.shiftKey) {
+        newLines = lines.map((l) => { const m = l.match(/^ {1,4}/); const k = m ? m[0].length : 0; total -= k; return l.slice(k); });
+        const m0 = lines[0].match(/^ {1,4}/); firstDelta = m0 ? -m0[0].length : 0;
+      } else {
+        newLines = lines.map((l) => { total += 4; return "    " + l; });
+        firstDelta = 4;
+      }
+      const nb = newLines.join("\n");
+      ta.setRangeText(nb, lineStart, blockEnd, "preserve");
+      if (s === en) { const p = Math.max(lineStart, s + firstDelta); ta.setSelectionRange(p, p); }
+      else ta.setSelectionRange(Math.max(lineStart, s + firstDelta), en + total);
+      ta.dispatchEvent(new Event("input"));
+    }
+    return;
+  }
+  escPressed = false;
+  if (e.key === "Enter" && !e.shiftKey) {
+    e.preventDefault();
+    const v = ta.value, s = ta.selectionStart;
+    const lineStart = v.lastIndexOf("\n", s - 1) + 1;
+    const line = v.slice(lineStart, s);
+    let indent = (line.match(/^ */) || [""])[0];
+    if (/:\s*(#.*)?$/.test(line)) indent += "    ";
+    insertText("\n" + indent);
+  }
+});
+function insertText(t) {
+  const ta = els.code;
+  ta.setRangeText(t, ta.selectionStart, ta.selectionEnd, "end");
+  ta.dispatchEvent(new Event("input"));
+}
+els.reset.addEventListener("click", () => {
+  els.code.value = STARTER; errLine = null; renderGutter(); saveCode(); els.code.focus();
+});
+
+// ---------------------------------------------------------------- python
+let worker = null, workerReady = false, mainPy = null, mode = "worker", runId = 0, runTimer = null;
+const engineSrc = document.getElementById("engine-src").textContent;
+
+function setRunState(label, disabled) { els.run.textContent = label; els.run.disabled = disabled; }
+
+function workerSource() {
+  return [
+    'importScripts("' + PYODIDE_URL + 'pyodide.js");',
+    'let run = null;',
+    'self.onmessage = async (e) => {',
+    '  const m = e.data;',
+    '  if (m.type === "init") {',
+    '    try {',
+    '      const py = await loadPyodide({ indexURL: "' + PYODIDE_URL + '" });',
+    '      py.FS.writeFile("/home/pyodide/pond_engine.py", m.engine);',
+    '      py.runPython("import sys\\nsys.path.insert(0, \'/home/pyodide\')\\nimport pond_engine");',
+    '      run = py.globals.get("pond_engine").run_user_code;',
+    '      self.postMessage({ type: "ready" });',
+    '    } catch (err) { self.postMessage({ type: "initError", error: String(err) }); }',
+    '  } else if (m.type === "run") {',
+    '    try { self.postMessage({ type: "result", id: m.id, out: run(m.code) }); }',
+    '    catch (err) { self.postMessage({ type: "crash", id: m.id, error: String(err) }); }',
+    '  }',
+    '};'
+  ].join("\n");
+}
+
+function startWorker() {
+  workerReady = false;
+  setRunState("Loading Python…", true);
+  try {
+    const blob = new Blob([workerSource()], { type: "text/javascript" });
+    worker = new Worker(URL.createObjectURL(blob));
+  } catch (err) { return fallbackToMain(); }
+  const initTimer = setTimeout(() => { if (!workerReady) fallbackToMain(); }, 45000);
+  worker.onmessage = (e) => {
+    const m = e.data;
+    if (m.type === "ready") { clearTimeout(initTimer); workerReady = true; setRunState("Run ▶", false); }
+    else if (m.type === "initError") { clearTimeout(initTimer); fallbackToMain(); }
+    else if (m.type === "result" && m.id === runId) { clearTimeout(runTimer); onResult(m.out); }
+    else if (m.type === "crash" && m.id === runId) { clearTimeout(runTimer); onCrash(m.error); }
+  };
+  worker.onerror = () => { if (!workerReady) { clearTimeout(initTimer); fallbackToMain(); } };
+  worker.postMessage({ type: "init", engine: engineSrc });
+}
+
+function fallbackToMain() {
+  if (mode === "main") return;
+  mode = "main";
+  try { if (worker) worker.terminate(); } catch (e) {}
+  worker = null;
+  setRunState("Loading Python…", true);
+  const s = document.createElement("script");
+  s.src = PYODIDE_URL + "pyodide.js";
+  s.onload = async () => {
+    try {
+      const py = await window.loadPyodide({ indexURL: PYODIDE_URL });
+      py.FS.writeFile("/home/pyodide/pond_engine.py", engineSrc);
+      py.runPython("import sys\nsys.path.insert(0, '/home/pyodide')\nimport pond_engine");
+      mainPy = py.globals.get("pond_engine").run_user_code;
+      setRunState("Run ▶", false);
+    } catch (err) { loadFailed(); }
+  };
+  s.onerror = loadFailed;
+  document.head.appendChild(s);
+}
+function loadFailed() {
+  setRunState("Python didn't load", true);
+  showResult("lose", "Problem", "Python couldn't load in this browser. Check the internet connection and reload the page.");
+}
+
+function startRun() {
+  if (els.run.disabled) return;
+  const code = els.code.value;
+  errLine = null; renderGutter();
+  runId += 1;
+  stopPlayback(false);
+  P.data = null; P.t = 0; P.done = false; banner = null;
+  resetFx();
+  clearConsole();
+  showResult("info", "Running", "Running your code…");
+  if (mode === "worker" && worker && workerReady) {
+    worker.postMessage({ type: "run", id: runId, code });
+    const myId = runId;
+    clearTimeout(runTimer);
+    runTimer = setTimeout(() => {
+      if (myId !== runId) return;
+      // stuck somewhere the loop guard can't see: restart Python
+      worker.terminate();
+      onResult(JSON.stringify(frozenResult()));
+      startWorker();
+    }, 12000);
+  } else if (mainPy) {
+    setTimeout(() => {
+      try { onResult(mainPy(code)); } catch (err) { onCrash(String(err)); }
+    }, 20);
+  }
+}
+function frozenResult() {
+  return { frames: [initialFrame()], events: [{ t: 0, kind: "frozen", text: "Time stopped! No wait() in your loop." }], prints: [],
+    result: { outcome: "frozen", error: "Time stopped! Your code got stuck and no time passed. Make sure every loop calls wait().", error_line: null, fish_dead: {1: null, 2: null}, motor_hours: 0, motor_dead: false, hours: 0 } };
+}
+function onCrash(msg) { showResult("lose", "Problem", "Something went wrong running the code: " + msg); }
+function onResult(json) {
+  let data;
+  try { data = JSON.parse(json); } catch (e) { return onCrash("bad result"); }
+  if (data.result.outcome === "error" && data.frames.length <= 1) {
+    P.data = data; P.t = 0; P.nextEvent = data.events.length; P.nextPrint = 0; P.playing = false;
+    finishPlayback(data);
+    return;
+  }
+  startPlayback(data);
+}
+
+// ---------------------------------------------------------------- playback
+function initialFrame() { return { t: 0, p1: 1.5, p2: 1.5, temp: 20, motor: false, target: 1, dead1: false, dead2: false, fire: false, switching: false, in1: 0.05, in2: 0.05, tx1: 0, tx2: 0 }; }
+const P = { data: null, t: 0, speed: 1, playing: false, nextEvent: 0, nextPrint: 0, done: false };
+let banner = null;
+
+function clock(t) {
+  const h = START_CLOCK + Math.floor(t);
+  const day = Math.floor(h / 24) + 1, hh = h % 24;
+  return "Day " + day + ", " + String(hh).padStart(2, "0") + ":00";
+}
+function startPlayback(data) {
+  P.data = data; P.t = 0; P.playing = true; P.nextEvent = 0; P.nextPrint = 0; P.done = false;
+  banner = null;
+  els.stop.disabled = false; els.skip.disabled = false;
+  showResult("info", "Playing", "Watch the ponds…");
+}
+function stopPlayback(showStopped) {
+  if (P.playing && showStopped) { P.playing = false; finishPlayback(P.data, true); }
+  P.playing = false;
+  els.stop.disabled = true; els.skip.disabled = true;
+}
+function maxT() { return P.data ? P.data.frames.length - 1 : 0; }
+function frameAt(t) {
+  const fr = P.data ? P.data.frames : [initialFrame()];
+  const i = Math.max(0, Math.min(fr.length - 1, Math.floor(t)));
+  const a = fr[i], b = fr[Math.min(fr.length - 1, i + 1)];
+  const k = Math.max(0, Math.min(1, t - i));
+  return Object.assign({}, a, {
+    p1: a.p1 + (b.p1 - a.p1) * k, p2: a.p2 + (b.p2 - a.p2) * k,
+    temp: a.temp + (b.temp - a.temp) * k, in1: a.in1 + (b.in1 - a.in1) * k, in2: a.in2 + (b.in2 - a.in2) * k,
+    tx1: (a.tx1 || 0) + ((b.tx1 || 0) - (a.tx1 || 0)) * k, tx2: (a.tx2 || 0) + ((b.tx2 || 0) - (a.tx2 || 0)) * k, tf: t,
+  });
+}
+function advance(dt) {
+  if (!P.playing || !P.data) return;
+  P.t = Math.min(maxT(), P.t + dt * P.speed);
+  const ev = P.data.events;
+  while (P.nextEvent < ev.length && ev[P.nextEvent].t <= P.t + 1e-9) {
+    onEvent(ev[P.nextEvent++]);
+  }
+  const pr = P.data.prints;
+  while (P.nextPrint < pr.length && pr[P.nextPrint].t <= P.t + 1e-9) logLine(pr[P.nextPrint].t, pr[P.nextPrint++].text);
+  if (P.t >= maxT()) { P.playing = false; finishPlayback(P.data); }
+}
+function bannerText(e) {
+  if (e.kind === "fish") return e.text.startsWith("Pond 1") ? "Pond 1: the fish died!" : "Pond 2: the fish died!";
+  if (e.kind === "fire") return "The motor caught fire!";
+  if (e.kind === "spray") return "Splash! The farmer got soaked";
+  if (e.kind === "frozen") return "Time stopped!";
+  if (e.kind === "toxic") return e.text.includes("pond 1") ? "Toxic spill in pond 1!" : "Toxic spill in pond 2!";
+  if (e.kind === "error") return "Crash! Your code has an error";
+  return e.text;
+}
+function finishPlayback(data, stopped) {
+  els.stop.disabled = true; els.skip.disabled = true;
+  P.done = true;
+  if (!data) return;
+  // flush remaining prints when skipping
+  const pr = data.prints || [];
+  while (P.nextPrint < pr.length && pr[P.nextPrint].t <= P.t + 1e-9) logLine(pr[P.nextPrint].t, pr[P.nextPrint++].text);
+  const r = data.result;
+  if (stopped) { showResult("idle", "Stopped", "Stopped at " + clock(P.t) + ". Press Run to try again."); return; }
+  if (r.outcome === "error") {
+    errLine = r.error_line; renderGutter();
+    const where = r.error_line ? "Line " + r.error_line + ": " : "";
+    showResult("lose", "Error", where + r.error);
+    logLine(P.t, (r.error_line ? "Line " + r.error_line + ": " : "") + r.error, true);
+    return;
+  }
+  if (r.outcome === "frozen") { showResult("lose", "Stuck", r.error); logLine(P.t, r.error, true); return; }
+  if (r.outcome === "sprayed") {
+    showResult("lose", "Soaked", "At " + clock(r.hours) + " you swapped the hose with the motor still running. It whipped round and soaked the farmer. Call motor_off() before switch_to().");
+    return;
+  }
+  const parts = [];
+  if (r.motor_dead) {
+    const fe = data.events.find((e) => e.kind === "fire");
+    parts.push("The motor caught fire on " + clock(fe ? fe.t : r.hours) + ".");
+  }
+  for (const p of [1, 2]) if (r.fish_dead[p] != null) parts.push("Pond " + p + "'s fish died on " + clock(r.fish_dead[p]) + ".");
+  if (r.outcome === "win") {
+    spawnWin();
+    showResult("win", "Saved!", "Every fish survived all 4 days. The motor ran for " + r.motor_hours + " hours. Can you do it with less?");
+  } else {
+    showResult("lose", "Not yet", parts.join(" ") + " Change your code and try again.");
+  }
+}
+function showResult(kind, tag, text) {
+  els.result.className = "result " + kind;
+  els.result.querySelector(".tag").textContent = tag;
+  els.resultText.textContent = text;
+}
+let consoleFresh = true;
+function clearConsole() { els.console.innerHTML = ""; consoleFresh = false; }
+function logLine(t, text, isErr) {
+  const line = document.createElement("div");
+  const ts = document.createElement("span"); ts.className = "t"; ts.textContent = "[" + clock(t) + "] ";
+  const tx = document.createElement("span"); if (isErr) tx.className = "e"; tx.textContent = text;
+  line.appendChild(ts); line.appendChild(tx);
+  els.console.appendChild(line);
+  els.console.scrollTop = els.console.scrollHeight;
+}
+
+els.run.addEventListener("click", startRun);
+els.stop.addEventListener("click", () => stopPlayback(true));
+els.skip.addEventListener("click", () => { if (P.data) { frameNow = Math.max(frameNow, performance.now()); advance((maxT() - P.t) / P.speed + 1); } });
+document.querySelectorAll(".seg button").forEach((b) => b.addEventListener("click", () => {
+  P.speed = Number(b.dataset.speed);
+  document.querySelectorAll(".seg button").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+}));
+
+// ---------------------------------------------------------------- status bar
+function chip(cls, html) { return '<span class="chip ' + cls + '">' + html + '</span>'; }
+function levelCls(p, dead) { return dead ? "bad" : p > 6 ? "bad" : p > SAFE ? "warn" : "ok"; }
+let lastStatus = "";
+function renderStatus(f) {
+  const t = Math.floor(f.tf);
+  let motor;
+  if (f.fire) motor = chip("bad", "Motor: <b>on fire</b>");
+  else if (f.switching) motor = chip("warn", "Swapping hose to pond " + f.target);
+  else motor = chip(f.motor ? "ok" : "", "Motor: <b>" + (f.motor ? "on" : "off") + "</b> → pond " + f.target);
+  const tempCls = f.fire || f.temp >= 80 ? "bad" : f.temp >= 50 ? "warn" : "ok";
+  const html = chip("", "<b>" + clock(t) + "</b>") +
+    chip(levelCls(f.p1, f.dead1), '<span class="dot" style="background:#1f6f9a"></span>Pond 1: <b>' + f.p1.toFixed(1) + "</b>" + (f.dead1 ? " (fish dead)" : "")) +
+    chip(levelCls(f.p2, f.dead2), '<span class="dot" style="background:#7a4fb5"></span>Pond 2: <b>' + f.p2.toFixed(1) + "</b>" + (f.dead2 ? " (fish dead)" : "")) +
+    chip(tempCls, "Motor temp: <b>" + Math.round(f.temp) + "°C</b>") + motor +
+    (f.tx1 > 0.08 ? chip("bad", "Toxic leak: pond 1") : "") + (f.tx2 > 0.08 ? chip("bad", "Toxic leak: pond 2") : "");
+  if (html !== lastStatus) { els.status.innerHTML = html; lastStatus = html; }
+}
+
+// ---------------------------------------------------------------- drawing helpers
+const W = 1000, H = 440;
+const ctx = els.scene.getContext("2d");
+const cctx = els.chart.getContext("2d");
+function fitCanvas(cv, c2, w, h) {
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  const cw = cv.clientWidth || w;
+  const px = Math.round(cw * dpr), py = Math.round(cw * dpr * h / w);
+  if (cv.width !== px || cv.height !== py) { cv.width = px; cv.height = py; }
+  c2.setTransform(px / w, 0, 0, py / h, 0, 0);
+}
+function mix(c1, c2, k) {
+  k = Math.max(0, Math.min(1, k));
+  const a = c1.match(/\w\w/g).map((x) => parseInt(x, 16)), b = c2.match(/\w\w/g).map((x) => parseInt(x, 16));
+  return "rgb(" + a.map((v, i) => Math.round(v + (b[i] - v) * k)).join(",") + ")";
+}
+function rr(c, x, y, w, h, r) { c.beginPath(); c.roundRect ? c.roundRect(x, y, w, h, r) : c.rect(x, y, w, h); }
+
+const PONDS = {
+  1: { cx: 245, cy: 318, rx: 175, ry: 82, fish: 5, col: "#1f6f9a", pipeX: 0 },
+  2: { cx: 760, cy: 322, rx: 150, ry: 72, fish: 4, col: "#7a4fb5", pipeX: 1000 },
+};
+const MOTOR = { x: 445, y: 176, w: 110, h: 64 };
+const bubbles = { 1: [], 2: [] };
+const smoke = [];
+
+function skyColors(hour) {
+  // hour 0..24 -> [top, bottom]
+  const keys = [
+    [0, "#0f1d3a", "#26385e"], [5, "#1c2a50", "#3c4f7c"], [6.5, "#f1a96b", "#f6d6a8"], [8, "#6fb2de", "#bfe0f2"],
+    [17, "#6fb2de", "#bfe0f2"], [19, "#e98a5b", "#f3c58f"], [20.5, "#253a68", "#4d5f8c"], [24, "#0f1d3a", "#26385e"],
+  ];
+  for (let i = 0; i < keys.length - 1; i++) {
+    const [h0, t0, b0] = keys[i], [h1, t1, b1] = keys[i + 1];
+    if (hour >= h0 && hour <= h1) { const k = (hour - h0) / (h1 - h0); return [mix(t0, t1, k), mix(b0, b1, k)]; }
+  }
+  return [keys[0][1], keys[0][2]];
+}
+
+// ---------------------------------------------------------------- scene
+function drawScene(f, now) {
+  fitCanvas(els.scene, ctx, W, H);
+  const c = ctx;
+  const dt = Math.min(0.1, Math.max(0, (now - FX.last) / 1000)); FX.last = now;
+  const an = FX.frozenAt != null ? FX.frozenAt : now;
+  c.save();
+  if (FX.fireAt != null && !reduceMotion) {
+    const a = (now - FX.fireAt) / 1000;
+    if (a < 0.9) { const m = 18 * (1 - a / 0.9); c.translate((Math.random() - 0.5) * m, (Math.random() - 0.5) * m); }
+  }
+  const hourOfDay = (START_CLOCK + f.tf) % 24;
+  const [skyTop, skyBot] = skyColors(hourOfDay);
+  const night = hourOfDay < 6 || hourOfDay > 20.3;
+  // sky
+  let g = c.createLinearGradient(0, 0, 0, 175);
+  g.addColorStop(0, skyTop); g.addColorStop(1, skyBot);
+  c.fillStyle = g; c.fillRect(0, 0, W, 180);
+  // sun / moon on an arc
+  const dayK = (hourOfDay - 6) / 14; // 06:00 -> 20:00
+  if (dayK >= 0 && dayK <= 1) {
+    const sx = 80 + dayK * 840, sy = 150 - Math.sin(dayK * Math.PI) * 115;
+    c.fillStyle = "#ffd75e"; c.beginPath(); c.arc(sx, sy, 22, 0, Math.PI * 2); c.fill();
+  } else {
+    const nk = ((hourOfDay - 20 + 24) % 24) / 10;
+    const mx = 80 + nk * 840, my = 150 - Math.sin(nk * Math.PI) * 105;
+    c.fillStyle = "#e9eefc"; c.beginPath(); c.arc(mx, my, 16, 0, Math.PI * 2); c.fill();
+    c.fillStyle = skyTop; c.beginPath(); c.arc(mx + 7, my - 4, 14, 0, Math.PI * 2); c.fill();
+    c.fillStyle = "rgba(255,255,255,0.7)";
+    for (let i = 0; i < 26; i++) { const x = (i * 137) % 1000, y = (i * 53) % 140 + 6; c.fillRect(x, y, 2, 2); }
+  }
+  // hills and field
+  c.fillStyle = night ? "#2f4f3a" : "#7fb069";
+  c.beginPath(); c.moveTo(0, 190); c.quadraticCurveTo(250, 130, 520, 185); c.quadraticCurveTo(760, 140, 1000, 180); c.lineTo(1000, 440); c.lineTo(0, 440); c.fill();
+  c.fillStyle = night ? "#355c41" : "#8fc274";
+  c.fillRect(0, 205, W, 235);
+  c.fillStyle = night ? "rgba(255,255,255,0.03)" : "rgba(255,255,255,0.08)";
+  for (let y = 215; y < 440; y += 18) c.fillRect(0, y, W, 2);
+
+  // sewage pipes
+  for (const p of [1, 2]) drawPipe(c, p, p === 1 ? f.in1 : f.in2, an);
+  // ponds
+  for (const p of [1, 2]) drawPond(c, p, f, now, an);
+  for (const p of [1, 2]) drawToxic(c, p, f, now, an);
+  // hoses
+  drawHoses(c, f, an);
+  // motor, thermometer, smoke
+  drawMotor(c, f, an);
+  for (const p of [1, 2]) drawPipeLabel(c, p, p === 1 ? f.in1 : f.in2);
+  // pollution meters
+  for (const p of [1, 2]) drawMeter(c, p, p === 1 ? f.p1 : f.p2, p === 1 ? f.dead1 : f.dead2);
+  // farmer when soaked
+  if (FX.sprayAt != null) drawFarmer(c, now);
+  drawParts(c, now, dt);
+  c.restore();
+  if (FX.fireAt != null) drawFireBurst(c, now);
+  if (FX.frozenAt != null) drawFrozen(c, now);
+  if (FX.errAt != null) {
+    const a = (now - FX.errAt) / 1000;
+    if (a < 1.2) { c.strokeStyle = "rgba(191,58,43," + (1 - a / 1.2) + ")"; c.lineWidth = 16; c.strokeRect(0, 0, W, H); }
+  }
+  // clock
+  c.fillStyle = "rgba(10,25,22,0.55)"; rr(c, 14, 12, 170, 34, 10); c.fill();
+  c.fillStyle = "#fff"; c.font = "600 18px Fredoka, sans-serif"; c.textBaseline = "middle";
+  c.fillText(clock(f.tf), 28, 30);
+  // banner
+  if (banner) {
+    const age = (now - banner.born) / 1000;
+    if (age > 3.2) banner = null;
+    else {
+      const a = Math.min(1, age * 4, (3.2 - age) * 3);
+      c.globalAlpha = a;
+      c.font = "600 26px Fredoka, sans-serif";
+      const tw = c.measureText(banner.text).width + 48;
+      const bcol = { fire: "#bf3a2b", fish: "#bf3a2b", error: "#bf3a2b", toxic: "#55660f", spray: "#1f6f9a", frozen: "#3a6ea5", win: "#2c8248" };
+      c.fillStyle = bcol[banner.kind] || "#15302a";
+      rr(c, (W - tw) / 2, 18, tw, 50, 14); c.fill();
+      c.fillStyle = "#fff"; c.textAlign = "center"; c.fillText(banner.text, W / 2, 44); c.textAlign = "left";
+      c.globalAlpha = 1;
+    }
+  }
+}
+
+function drawPipe(c, p, inflow, now) {
+  const pd = PONDS[p];
+  const left = p === 1;
+  const x0 = left ? 0 : W, x1 = left ? pd.cx - pd.rx + 30 : pd.cx + pd.rx - 30;
+  const y = pd.cy - 38;
+  c.fillStyle = "#6f7d78";
+  c.fillRect(Math.min(x0, x1), y - 9, Math.abs(x1 - x0), 18);
+  c.fillStyle = "#56625e";
+  c.fillRect(left ? x1 - 6 : x1 - 6, y - 12, 12, 24);
+  const k = Math.max(0, Math.min(1, (inflow - 0.05) / 0.9));
+  if (k > 0.02) {
+    const sx = x1 + (left ? 6 : -6);
+    c.strokeStyle = "rgba(110,84,40," + (0.35 + 0.6 * k) + ")";
+    c.lineWidth = 4 + 10 * k; c.lineCap = "round";
+    c.beginPath(); c.moveTo(sx, y); c.quadraticCurveTo(sx + (left ? 22 : -22), y + 6, sx + (left ? 30 : -30), y + 34); c.stroke();
+    c.fillStyle = "rgba(110,84,40,0.55)";
+    for (let i = 0; i < 3; i++) {
+      const ph = ((now / 400) + i / 3) % 1;
+      c.beginPath(); c.arc(sx + (left ? 30 : -30) + (i - 1) * 8, y + 34 + ph * 8, 3 + 3 * k * (1 - ph), 0, Math.PI * 2); c.fill();
+    }
+  }
+}
+function drawPipeLabel(c, p, inflow) {
+  const pd = PONDS[p], left = p === 1;
+  const k = (inflow - 0.05) / 0.9;
+  if (k <= 0.25) return;
+  const y = pd.cy - 38;
+  c.font = "700 13px 'Atkinson Hyperlegible', sans-serif";
+  const tw = c.measureText("Sewage overflow").width + 16;
+  const x = left ? 6 : W - 6 - tw;
+  c.fillStyle = "rgba(255,244,224,0.95)"; rr(c, x, y - 40, tw, 22, 7); c.fill();
+  c.fillStyle = "#5a3b0a"; c.textBaseline = "middle"; c.fillText("Sewage overflow", x + 8, y - 29); c.textBaseline = "alphabetic";
+}
+
+function fishPos(pd, i, now, gasping) {
+  const sp = reduceMotion ? 0.00012 : 0.00045;
+  const ang = now * sp * (gasping ? 0.5 : 1) * (1 + (i % 3) * 0.25) + i * 2.1;
+  const x = pd.cx + Math.cos(ang) * pd.rx * (0.42 + 0.12 * (i % 2));
+  const yBase = gasping ? pd.cy - pd.ry * 0.45 : pd.cy + (i % 2 ? 10 : -6);
+  const y = yBase + Math.sin(ang * 1.7) * pd.ry * (gasping ? 0.08 : 0.32);
+  const dir = -Math.sin(ang) >= 0 ? 1 : -1;
+  return { x, y, dir };
+}
+
+function drawPond(c, p, f, now, an) {
+  const realNow = now; now = an;
+  const pd = PONDS[p];
+  const pol = p === 1 ? f.p1 : f.p2;
+  const dead = p === 1 ? f.dead1 : f.dead2;
+  // bank
+  c.fillStyle = "#6b5d3f";
+  c.beginPath(); c.ellipse(pd.cx, pd.cy + 4, pd.rx + 10, pd.ry + 9, 0, 0, Math.PI * 2); c.fill();
+  // water colour: clear blue -> murky brown
+  const k = Math.min(1, pol / 9);
+  const water = k < 0.5 ? mix("3f93c6", "6f8f5a", k * 2) : mix("6f8f5a", "6b5528", (k - 0.5) * 2);
+  c.fillStyle = water;
+  c.beginPath(); c.ellipse(pd.cx, pd.cy, pd.rx, pd.ry, 0, 0, Math.PI * 2); c.fill();
+  const tx = p === 1 ? f.tx1 : f.tx2;
+  if (tx > 0.02) {
+    c.fillStyle = "rgba(120,205,40," + Math.min(0.55, tx * 0.8) + ")";
+    c.beginPath(); c.ellipse(pd.cx, pd.cy, pd.rx, pd.ry, 0, 0, Math.PI * 2); c.fill();
+  }
+  c.save();
+  c.beginPath(); c.ellipse(pd.cx, pd.cy, pd.rx, pd.ry, 0, 0, Math.PI * 2); c.clip();
+  // ripples
+  c.strokeStyle = "rgba(255,255,255,0.18)"; c.lineWidth = 2;
+  for (let i = 0; i < 4; i++) {
+    const y = pd.cy - pd.ry * 0.5 + i * pd.ry * 0.33;
+    const off = reduceMotion ? 0 : Math.sin(now / 900 + i) * 20;
+    c.beginPath(); c.moveTo(pd.cx - pd.rx * 0.6 + off, y); c.lineTo(pd.cx - pd.rx * 0.2 + off, y); c.stroke();
+  }
+  // scum when dirty
+  if (pol > 4) {
+    c.fillStyle = "rgba(60,48,20," + Math.min(0.45, (pol - 4) / 10) + ")";
+    for (let i = 0; i < 12; i++) {
+      const x = pd.cx - pd.rx + ((i * 71) % (pd.rx * 2)), y = pd.cy - pd.ry + ((i * 37) % (pd.ry * 2));
+      c.beginPath(); c.ellipse(x, y, 14, 5, 0, 0, Math.PI * 2); c.fill();
+    }
+  }
+  // fish
+  const gasping = !dead && pol > 6;
+  for (let i = 0; i < pd.fish; i++) {
+    if (dead) {
+      const ex = pd.cx - pd.rx * 0.55 + i * (pd.rx * 1.1 / (pd.fish - 1)), ey = pd.cy - pd.ry * 0.35 + (i % 2) * 14 + Math.sin(now / 700 + i) * 2;
+      const st = FX.deathPos[p] && FX.deathPos[p][i];
+      const k = st ? Math.min(1, (realNow - FX.deathAt[p]) / 1500) : 1;
+      if (k < 1) {
+        const e = k * k * (3 - 2 * k);
+        drawFish(c, st.x + (ex - st.x) * e, st.y + (ey - st.y) * e, st.dir, false, i, e * Math.PI * st.dir, e);
+      } else drawDeadFish(c, ex, ey);
+    } else {
+      const fp = fishPos(pd, i, now, gasping);
+      drawFish(c, fp.x, fp.y, fp.dir, gasping, i);
+      if (gasping && !reduceMotion && Math.random() < 0.02) bubbles[p].push({ x: fp.x + fp.dir * 14, y: fp.y - 4, v: 0.4, r: 2, life: 1 });
+    }
+  }
+  // aerator + bubbles
+  const ax = pd.cx, ay = pd.cy + 6;
+  const active = f.motor && !f.fire && f.target === p && !f.switching && FX.sprayAt == null;
+  c.fillStyle = "#3b4643"; c.beginPath(); c.ellipse(ax, ay, 16, 6, 0, 0, Math.PI * 2); c.fill();
+  if (active && !reduceMotion) {
+    for (let i = 0; i < 3; i++) bubbles[p].push({ x: ax + (Math.random() - 0.5) * 22, y: ay, v: 0.8 + Math.random() * 1.2, r: 2 + Math.random() * 4, life: 1 });
+  }
+  const bl = bubbles[p];
+  c.lineWidth = 1.5;
+  for (let i = bl.length - 1; i >= 0; i--) {
+    const b = bl[i];
+    if (FX.frozenAt == null) { b.y -= b.v; b.x += Math.sin(b.y / 6) * 0.4; b.life -= 0.012; }
+    if (b.life <= 0 || b.y < pd.cy - pd.ry) { bl.splice(i, 1); continue; }
+    c.strokeStyle = b.green ? "rgba(170,240,70,0.95)" : "rgba(255,255,255,0.85)";
+    c.beginPath(); c.arc(b.x, b.y, b.r, 0, Math.PI * 2); c.stroke();
+  }
+  if (bl.length > 260) bl.splice(0, bl.length - 260);
+  if (active) {
+    c.fillStyle = "rgba(255,255,255,0.55)";
+    c.beginPath(); c.ellipse(ax, pd.cy - pd.ry * 0.05, 34, 10 + Math.sin(now / 120) * 2, 0, 0, Math.PI * 2); c.fill();
+  }
+  c.restore();
+  if (dead) {
+    for (let j = 0; j < 5; j++) {
+      const a = now / 260 * (1 + j * 0.21) + j * 1.3;
+      const x = pd.cx - 20 + j * 10 + Math.cos(a) * (26 + j * 9), y = pd.cy - pd.ry * 0.35 - 30 + Math.sin(a * 1.6) * 11;
+      c.fillStyle = "rgba(255,255,255,0.7)"; c.beginPath(); c.ellipse(x - 2, y - 3, 2.4, 1.3, 0, 0, Math.PI * 2); c.fill();
+      c.fillStyle = "#1d1d1d"; c.beginPath(); c.arc(x, y, 2.6, 0, Math.PI * 2); c.fill();
+    }
+    c.strokeStyle = "rgba(110,140,30,0.75)"; c.lineWidth = 2.5;
+    for (let j = 0; j < 3; j++) {
+      const x0 = pd.cx - 55 + j * 55;
+      c.beginPath();
+      for (let s2 = 0; s2 <= 30; s2 += 3) { const y = pd.cy - pd.ry * 0.25 - 12 - s2 * 1.5, x = x0 + Math.sin(s2 / 5 + now / 400 + j) * 5; s2 ? c.lineTo(x, y) : c.moveTo(x, y); }
+      c.stroke();
+    }
+  } else if (FX.winAt != null && !reduceMotion) {
+    const age = (realNow - FX.winAt) / 1000;
+    if (age < 8) for (let j = 0; j < 2; j++) {
+      const t = ((age + j * 0.65 + p * 0.3) % 1.3) / 1.3;
+      const x = pd.cx - 70 + j * 100 + t * 50, y = pd.cy - pd.ry * 0.15 - Math.sin(t * Math.PI) * 95;
+      drawFish(c, x, y, 1, false, j + 2, -Math.cos(t * Math.PI) * 0.9, 0);
+      if (t > 0.92) { c.strokeStyle = "rgba(255,255,255,0.8)"; c.lineWidth = 2; c.beginPath(); c.ellipse(x, pd.cy - pd.ry * 0.15 + 4, 22, 6, 0, 0, Math.PI * 2); c.stroke(); }
+    }
+  }
+  // label
+  c.fillStyle = "#15302a"; c.font = "600 18px Fredoka, sans-serif"; c.textAlign = "center";
+  c.fillStyle = "rgba(255,255,255,0.85)"; rr(c, pd.cx - 40, pd.cy + pd.ry + 12, 80, 26, 8); c.fill();
+  c.fillStyle = "#15302a"; c.fillText("Pond " + p, pd.cx, pd.cy + pd.ry + 26); c.textAlign = "left";
+}
+
+function drawFish(c, x, y, dir, gasping, i, rot, grey) {
+  c.save(); c.translate(x, y); if (rot) c.rotate(rot); c.scale(dir, 1);
+  const base = ["f28c28", "f2b632", "e8692c", "f5a35a", "e0812f"][i % 5];
+  const col = grey ? mix(base, "b9b4a6", grey) : "#" + base;
+  c.fillStyle = col;
+  c.beginPath(); c.moveTo(-16, 0); c.lineTo(-28, -9); c.lineTo(-28, 9); c.closePath(); c.fill();
+  c.beginPath(); c.ellipse(0, 0, 18, 9, 0, 0, Math.PI * 2); c.fill();
+  c.fillStyle = "#fff"; c.beginPath(); c.arc(9, -3, 3.2, 0, Math.PI * 2); c.fill();
+  c.fillStyle = "#15302a"; c.beginPath(); c.arc(10, -3, 1.7, 0, Math.PI * 2); c.fill();
+  if (gasping) { c.strokeStyle = "#15302a"; c.lineWidth = 1.5; c.beginPath(); c.arc(17, 2, 2.5, 0, Math.PI * 2); c.stroke(); }
+  c.restore();
+}
+function drawDeadFish(c, x, y) {
+  c.save(); c.translate(x, y); c.scale(1, -1);
+  c.fillStyle = "#b9b4a6";
+  c.beginPath(); c.moveTo(-16, 0); c.lineTo(-28, -9); c.lineTo(-28, 9); c.closePath(); c.fill();
+  c.beginPath(); c.ellipse(0, 0, 18, 9, 0, 0, Math.PI * 2); c.fill();
+  c.restore();
+  c.strokeStyle = "#3a3a3a"; c.lineWidth = 2;
+  c.beginPath(); c.moveTo(x + 6, y + 0); c.lineTo(x + 12, y + 6); c.moveTo(x + 12, y + 0); c.lineTo(x + 6, y + 6); c.stroke();
+}
+
+function drawHoses(c, f, now) {
+  const mx = MOTOR.x + MOTOR.w / 2, my = MOTOR.y + MOTOR.h;
+  for (const p of [1, 2]) {
+    const pd = PONDS[p];
+    const connected = f.target === p && !f.switching && FX.sprayAt == null;
+    const live = connected && f.motor && !f.fire;
+    c.lineCap = "round";
+    c.setLineDash(connected ? [] : [6, 9]);
+    c.strokeStyle = connected ? (live ? "#2a7fb3" : "#3e4b47") : "rgba(62,75,71,0.45)";
+    c.lineWidth = connected ? 9 : 4;
+    c.beginPath();
+    c.moveTo(mx + (p === 1 ? -18 : 18), my - 4);
+    c.bezierCurveTo(mx + (p === 1 ? -60 : 60), my + 70, pd.cx + (p === 1 ? 120 : -120), pd.cy - 10, pd.cx, pd.cy + 6);
+    c.stroke();
+    c.setLineDash([]);
+    if (live && !reduceMotion) {
+      // moving air dashes
+      c.strokeStyle = "rgba(255,255,255,0.7)"; c.lineWidth = 3;
+      c.setLineDash([4, 14]); c.lineDashOffset = -now / 25;
+      c.beginPath();
+      c.moveTo(mx + (p === 1 ? -18 : 18), my - 4);
+      c.bezierCurveTo(mx + (p === 1 ? -60 : 60), my + 70, pd.cx + (p === 1 ? 120 : -120), pd.cy - 10, pd.cx, pd.cy + 6);
+      c.stroke(); c.setLineDash([]); c.lineDashOffset = 0;
+    }
+  }
+  if (f.switching && FX.sprayAt == null) {
+    c.font = "700 15px 'Atkinson Hyperlegible', sans-serif"; c.textAlign = "center";
+    c.fillStyle = "rgba(255,255,255,0.9)"; rr(c, MOTOR.x + MOTOR.w / 2 - 105, MOTOR.y + MOTOR.h + 50, 210, 26, 8); c.fill();
+    c.fillStyle = "#7a4808"; c.fillText("Swapping hose → pond " + f.target, MOTOR.x + MOTOR.w / 2, MOTOR.y + MOTOR.h + 64);
+    c.textAlign = "left";
+  }
+}
+
+function drawMotor(c, f, now) {
+  const m = MOTOR;
+  const hot = Math.max(0, Math.min(1, (f.temp - 40) / 60));
+  // body
+  c.fillStyle = f.fire ? "#2b2a28" : mix("5d6b67", "a8483a", hot);
+  rr(c, m.x, m.y, m.w, m.h, 10); c.fill();
+  c.fillStyle = f.fire ? "#1d1c1b" : "#3b4643";
+  rr(c, m.x + 8, m.y + m.h - 8, m.w - 16, 12, 4); c.fill();
+  // fan
+  const fx = m.x + 34, fy = m.y + 30;
+  c.fillStyle = "#cfd8d5"; c.beginPath(); c.arc(fx, fy, 19, 0, Math.PI * 2); c.fill();
+  const ang = f.motor && !f.fire && !reduceMotion ? now / 60 : 0.3;
+  c.fillStyle = "#3b4643";
+  for (let i = 0; i < 3; i++) {
+    const a = ang + i * 2.094;
+    c.beginPath(); c.moveTo(fx, fy); c.arc(fx, fy, 16, a, a + 0.8); c.closePath(); c.fill();
+  }
+  c.fillStyle = "#fff"; c.font = "600 16px Fredoka, sans-serif";
+  c.fillText(f.fire ? "FIRE!" : f.motor ? "ON" : "OFF", m.x + 60, m.y + 30);
+  c.font = "700 12px 'Atkinson Hyperlegible', sans-serif"; c.fillStyle = "rgba(255,255,255,0.85)";
+  c.fillText("MOTOR", m.x + 60, m.y + 47);
+  // thermometer
+  const tx = m.x + m.w + 22, ty = m.y - 34, th = 92;
+  c.fillStyle = "rgba(255,255,255,0.9)"; rr(c, tx - 9, ty - 4, 18, th + 8, 9); c.fill();
+  c.beginPath(); c.arc(tx, ty + th + 10, 13, 0, Math.PI * 2); c.fill();
+  const tk = Math.max(0, Math.min(1, f.temp / FIRE));
+  const tcol = f.temp >= 80 ? "#d23a2a" : f.temp >= 50 ? "#e09a1a" : "#3e9d5b";
+  c.fillStyle = tcol;
+  c.beginPath(); c.arc(tx, ty + th + 10, 9, 0, Math.PI * 2); c.fill();
+  rr(c, tx - 4, ty + th - th * tk, 8, th * tk + 4, 4); c.fill();
+  c.strokeStyle = "#d23a2a"; c.lineWidth = 2;
+  c.beginPath(); c.moveTo(tx + 11, ty); c.lineTo(tx + 19, ty); c.stroke();
+  c.font = "700 14px 'Atkinson Hyperlegible', sans-serif";
+  c.fillStyle = f.temp >= 80 || f.fire ? "#bf3a2b" : "rgba(10,25,22,0.65)"; rr(c, tx - 31, ty - 34, 62, 24, 7); c.fill();
+  c.fillStyle = "#fff"; c.textAlign = "center"; c.textBaseline = "middle"; c.fillText(Math.round(f.temp) + "°C", tx, ty - 22);
+  c.textAlign = "left"; c.textBaseline = "alphabetic";
+  // smoke & fire
+  if (!reduceMotion && (f.fire || f.temp > 72)) {
+    if (Math.random() < (f.fire ? 0.5 : 0.18)) smoke.push({ x: m.x + 20 + Math.random() * 70, y: m.y, r: 6, a: f.fire ? 0.7 : 0.45, dark: f.fire });
+  }
+  for (let i = smoke.length - 1; i >= 0; i--) {
+    const s = smoke[i]; s.y -= 0.9; s.x += 0.25; s.r += 0.25; s.a -= 0.006;
+    if (s.a <= 0) { smoke.splice(i, 1); continue; }
+    c.fillStyle = s.dark ? "rgba(40,36,32," + s.a + ")" : "rgba(220,220,220," + s.a + ")";
+    c.beginPath(); c.arc(s.x, s.y, s.r, 0, Math.PI * 2); c.fill();
+  }
+  if (f.fire) {
+    for (let i = 0; i < 5; i++) {
+      const fx2 = m.x + 14 + i * 21, h = 22 + Math.sin(now / 90 + i * 1.7) * 9 + (reduceMotion ? 0 : Math.random() * 6);
+      c.fillStyle = i % 2 ? "#ffb02e" : "#ff6a1f";
+      c.beginPath(); c.moveTo(fx2 - 10, m.y + 4); c.quadraticCurveTo(fx2 - 6, m.y - h * 0.5, fx2, m.y - h); c.quadraticCurveTo(fx2 + 6, m.y - h * 0.5, fx2 + 10, m.y + 4); c.fill();
+    }
+  }
+}
+
+function drawMeter(c, p, pol, dead) {
+  const pd = PONDS[p];
+  const w = 200, h = 14, x = pd.cx - w / 2, y = pd.cy - pd.ry - 44;
+  const maxV = 10;
+  c.fillStyle = "rgba(255,255,255,0.88)"; rr(c, x - 10, y - 24, w + 20, h + 36, 10); c.fill();
+  c.fillStyle = "#15302a"; c.font = "700 13px 'Atkinson Hyperlegible', sans-serif";
+  c.fillText("Pollution", x, y - 9);
+  c.textAlign = "right"; c.fillText(dead ? "fish dead" : pol.toFixed(1), x + w, y - 9); c.textAlign = "left";
+  c.fillStyle = "#e3ebe6"; rr(c, x, y, w, h, 7); c.fill();
+  const k = Math.max(0, Math.min(1, pol / maxV));
+  c.fillStyle = pol > 6 ? "#bf3a2b" : pol > SAFE ? "#d38a17" : "#3e9d5b";
+  if (k > 0) { rr(c, x, y, Math.max(8, w * k), h, 7); c.fill(); }
+  for (const [v, col] of [[SAFE, "#2c8248"], [DEADLY, "#bf3a2b"]]) {
+    const vx = x + (v / maxV) * w;
+    c.fillStyle = col; c.fillRect(vx - 1.5, y - 3, 3, h + 6);
+  }
+}
+
+function drawFarmer(c, now) {
+  const age = Math.max(0, (now - FX.sprayAt) / 1000);
+  const fx = MOTOR.x + 75, fy = H - 20;   // farmer's feet, on the grass below the motor
+  const wild = age < 3 ? 1 : 0.35;
+  const hx0 = MOTOR.x + 12, hy0 = MOTOR.y + MOTOR.h - 4;
+  const ex = fx + 48 + Math.sin(now / 65) * 34 * wild, ey = fy - 70 + Math.cos(now / 80) * 26 * wild;
+  // the loose hose
+  c.strokeStyle = "#3e4b47"; c.lineWidth = 8; c.lineCap = "round";
+  c.beginPath(); c.moveTo(hx0, hy0);
+  c.bezierCurveTo(hx0 - 20, hy0 + 60 + Math.sin(now / 90) * 30 * wild, ex + 40, ey + 40, ex, ey); c.stroke();
+  // water jet at the farmer
+  if (age < 6) {
+    c.strokeStyle = "rgba(130,195,240,0.9)"; c.lineWidth = 7;
+    c.beginPath(); c.moveTo(ex, ey); c.quadraticCurveTo((ex + fx) / 2, ey - 40, fx + 4, fy - 52); c.stroke();
+    if (!reduceMotion && Math.random() < 0.7) FX.parts.push({ type: "drop", x: fx + (Math.random() - 0.5) * 30, y: fy - 50, vx: (Math.random() - 0.5) * 160, vy: -Math.random() * 160, size: 2 + Math.random() * 2.5, color: "rgba(150,205,245,0.9)", life: 0.9 });
+  }
+  // puddle
+  const pk = Math.min(1, age / 2);
+  c.fillStyle = "rgba(110,175,225,0.75)"; c.beginPath(); c.ellipse(fx - 20, fy + 2, 20 + 34 * pk, 5 + 6 * pk, 0, 0, Math.PI * 2); c.fill();
+  // farmer topples backwards
+  const fall = Math.min(1, Math.max(0, (age - 0.25) / 0.45));
+  const ang = -fall * 1.45;
+  c.save(); c.translate(fx, fy); c.rotate(ang);
+  c.strokeStyle = "#2b2b2b"; c.lineWidth = 4; c.lineCap = "round";
+  c.beginPath();
+  c.moveTo(0, -38); c.lineTo(0, -12);
+  c.moveTo(0, -12); c.lineTo(-9, 0); c.moveTo(0, -12); c.lineTo(9, 0);
+  const shake = age > 1.4 ? Math.sin(now / 70) * 0.5 : 0;
+  c.moveTo(0, -30); c.lineTo(-14, -18);
+  c.moveTo(0, -30); c.lineTo(14 * Math.cos(-1.1 + shake), -30 + 14 * Math.sin(-1.1 + shake));
+  c.stroke();
+  c.fillStyle = "#f0c9a0"; c.beginPath(); c.arc(0, -48, 10, 0, Math.PI * 2); c.fill();
+  c.fillStyle = "#2b2b2b"; c.beginPath(); c.arc(3, -50, 1.6, 0, Math.PI * 2); c.arc(-3, -50, 1.6, 0, Math.PI * 2); c.fill();
+  c.restore();
+  // hat flies off and lands
+  let hx, hy, hr;
+  if (age < 1.3) { const k = age / 1.3; hx = fx - 10 - k * 110; hy = fy - 60 - Math.sin(k * Math.PI) * 90 + k * 55; hr = k * 9; }
+  else { hx = fx - 120; hy = fy - 5; hr = 0.3; }
+  c.save(); c.translate(hx, hy); c.rotate(hr);
+  c.fillStyle = "#8a5a2b"; c.fillRect(-16, -2, 32, 5); c.fillRect(-9, -12, 18, 11);
+  c.restore();
+}
+
+// ---------------------------------------------------------------- chart
+function drawChart(f) {
+  fitCanvas(els.chart, cctx, 1000, 170);
+  const c = cctx, L = 46, R = 925, T = 16, B = 140;
+  c.clearRect(0, 0, 1000, 170);
+  const xOf = (t) => L + (t / HOURS) * (R - L);
+  const yOf = (v) => B - (Math.min(v, 12) / 12) * (B - T);
+  const yTemp = (v) => B - (Math.min(v, 110) / 110) * (B - T);
+  // grid
+  c.strokeStyle = "#e3ebe6"; c.lineWidth = 1;
+  for (let v = 0; v <= 12; v += 3) { c.beginPath(); c.moveTo(L, yOf(v)); c.lineTo(R, yOf(v)); c.stroke(); }
+  c.fillStyle = "#557069"; c.font = "12px 'Atkinson Hyperlegible', sans-serif"; c.textAlign = "right"; c.textBaseline = "middle";
+  for (let v = 0; v <= 12; v += 3) c.fillText(String(v), L - 8, yOf(v));
+  c.textAlign = "left";
+  for (let d = 0; d <= 4; d++) {
+    const t = d * 24 - START_CLOCK + 24; // midnights
+    if (t > 0 && t < HOURS) { c.strokeStyle = "#d5e0da"; c.beginPath(); c.moveTo(xOf(t), T); c.lineTo(xOf(t), B); c.stroke(); }
+  }
+  c.textBaseline = "alphabetic";
+  for (let d = 1; d <= 4; d++) {
+    const t0 = Math.max(0, (d - 1) * 24 - START_CLOCK), t1 = Math.min(HOURS, d * 24 - START_CLOCK);
+    c.fillStyle = "#557069"; c.textAlign = "center"; c.fillText("Day " + d, xOf((t0 + t1) / 2), 160);
+  }
+  c.textAlign = "left";
+  // thresholds
+  c.setLineDash([6, 5]); c.lineWidth = 1.5;
+  c.strokeStyle = "#2c8248"; c.beginPath(); c.moveTo(L, yOf(SAFE)); c.lineTo(R, yOf(SAFE)); c.stroke();
+  c.strokeStyle = "#bf3a2b"; c.beginPath(); c.moveTo(L, yOf(DEADLY)); c.lineTo(R, yOf(DEADLY)); c.stroke();
+  c.setLineDash([]);
+  c.font = "700 12px 'Atkinson Hyperlegible', sans-serif";
+  c.fillStyle = "#b86e0c"; c.font = "12px 'Atkinson Hyperlegible', sans-serif";
+  c.fillText("100°C", R + 6, yTemp(100) + 4); c.fillText("50°C", R + 6, yTemp(50) + 4);
+  c.font = "700 12px 'Atkinson Hyperlegible', sans-serif";
+  c.fillStyle = "#2c8248"; c.fillText("safe", R + 6, yOf(SAFE) + 4);
+  c.fillStyle = "#bf3a2b"; c.fillText("fish die", R + 6, yOf(DEADLY) + 4);
+  // legend
+  const leg = [["Pond 1", "#1f6f9a", false], ["Pond 2", "#7a4fb5", false], ["Motor °C", "#d38a17", true]];
+  let lx = L + 6;
+  c.font = "12px 'Atkinson Hyperlegible', sans-serif";
+  for (const [name, col, dash] of leg) {
+    c.strokeStyle = col; c.lineWidth = 2.5; c.setLineDash(dash ? [3, 3] : []);
+    c.beginPath(); c.moveTo(lx, T + 2); c.lineTo(lx + 18, T + 2); c.stroke(); c.setLineDash([]);
+    c.fillStyle = "#15302a"; c.fillText(name, lx + 22, T + 6); lx += 22 + c.measureText(name).width + 18;
+  }
+  if (!P.data) return;
+  const fr = P.data.frames, upto = Math.min(fr.length - 1, f.tf);
+  const series = [["p1", "#1f6f9a", yOf, false], ["p2", "#7a4fb5", yOf, false], ["temp", "#d38a17", yTemp, true]];
+  for (const [key, col, ys, dash] of series) {
+    c.strokeStyle = col; c.lineWidth = dash ? 1.8 : 2.6; c.setLineDash(dash ? [3, 3] : []);
+    c.beginPath();
+    for (let i = 0; i <= Math.floor(upto); i++) { const x = xOf(i), y = ys(fr[i][key]); i ? c.lineTo(x, y) : c.moveTo(x, y); }
+    const v = key === "p1" ? f.p1 : key === "p2" ? f.p2 : f.temp;
+    c.lineTo(xOf(upto), ys(v)); c.stroke(); c.setLineDash([]);
+    c.fillStyle = col; c.beginPath(); c.arc(xOf(upto), ys(v), 3.5, 0, Math.PI * 2); c.fill();
+  }
+  for (const e of P.data.events) {
+    if (e.kind !== "toxic" || e.t > upto) continue;
+    const x = xOf(e.t);
+    c.strokeStyle = "#6b7d12"; c.lineWidth = 1.5; c.setLineDash([2, 3]);
+    c.beginPath(); c.moveTo(x, T + 12); c.lineTo(x, B); c.stroke(); c.setLineDash([]);
+    c.fillStyle = "#55660f"; c.font = "700 12px 'Atkinson Hyperlegible', sans-serif"; c.fillText("toxic spill", x + 5, B - 6);
+  }
+  c.strokeStyle = "rgba(21,48,42,0.35)"; c.lineWidth = 1;
+  c.beginPath(); c.moveTo(xOf(upto), T); c.lineTo(xOf(upto), B); c.stroke();
+}
+
+// ---------------------------------------------------------------- effects
+const FX = { parts: [], deathAt: {}, deathPos: {}, toxicAt: {}, splashed: {}, fireAt: null, sprayAt: null, frozenAt: null, winAt: null, errAt: null, last: performance.now() };
+function resetFx() {
+  FX.parts.length = 0; FX.deathAt = {}; FX.deathPos = {}; FX.toxicAt = {}; FX.splashed = {};
+  FX.fireAt = FX.sprayAt = FX.frozenAt = FX.winAt = FX.errAt = null;
+  smoke.length = 0; bubbles[1].length = 0; bubbles[2].length = 0;
+}
+let frameNow = performance.now();
+function onEvent(e) {
+  const now = frameNow;
+  const rank = { fish: 3, fire: 3, spray: 3, frozen: 3, error: 3, toxic: 2, win: 1 };
+  if (!(banner && now - banner.born < 1500 && (rank[banner.kind] || 0) > (rank[e.kind] || 0))) {
+    banner = { text: bannerText(e), kind: e.kind, born: now };
+  }
+  const m = /pond (\d)/i.exec(e.text);
+  const p = m ? Number(m[1]) : null;
+  if (e.kind === "fish" && p) {
+    FX.deathAt[p] = now;
+    const pd = PONDS[p];
+    FX.deathPos[p] = [];
+    for (let i = 0; i < pd.fish; i++) {
+      const fp = fishPos(pd, i, now, true);
+      FX.deathPos[p].push(fp);
+      FX.parts.push({ type: "ghost", x: fp.x, y: fp.y, born: now + 500 + i * 260, ph: Math.random() * 6 });
+    }
+  } else if (e.kind === "toxic" && p) {
+    FX.toxicAt[p] = now;
+  } else if (e.kind === "fire") {
+    FX.fireAt = now;
+    const cx = MOTOR.x + MOTOR.w / 2, cy = MOTOR.y + MOTOR.h / 2;
+    for (let i = 0; i < 28; i++) {
+      const a = Math.random() * Math.PI * 2, v = 160 + Math.random() * 280;
+      FX.parts.push({ type: "debris", x: cx, y: cy, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 240, rot: 0, vr: (Math.random() - 0.5) * 16, size: 5 + Math.random() * 8, life: 2.4 });
+    }
+    for (let i = 0; i < 60; i++) {
+      const a = Math.random() * Math.PI * 2, v = 80 + Math.random() * 340;
+      FX.parts.push({ type: "spark", x: cx, y: cy, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 140, life: 0.5 + Math.random() * 0.8 });
+    }
+  } else if (e.kind === "spray") {
+    FX.sprayAt = now;
+  } else if (e.kind === "frozen") {
+    FX.frozenAt = now;
+  } else if (e.kind === "error") {
+    FX.errAt = now;
+  }
+}
+function spawnWin() {
+  const now = frameNow;
+  FX.winAt = now;
+  banner = { text: "Every fish survived!", kind: "win", born: now };
+  if (reduceMotion) return;
+  const cols = ["#f28c28", "#3e9d5b", "#1f6f9a", "#7a4fb5", "#f2c200", "#e8692c"];
+  for (let i = 0; i < 150; i++) {
+    FX.parts.push({ type: "confetti", x: Math.random() * W, y: -20 - Math.random() * 260, vx: (Math.random() - 0.5) * 80, vy: 40 + Math.random() * 90, rot: Math.random() * 6, vr: (Math.random() - 0.5) * 10, color: cols[i % cols.length], life: 7 });
+  }
+}
+function drawParts(c, now, dt) {
+  for (let i = FX.parts.length - 1; i >= 0; i--) {
+    const q = FX.parts[i];
+    if (q.type === "ghost") {
+      const age = (now - q.born) / 1000;
+      if (age < 0) continue;
+      if (age > 3.4) { FX.parts.splice(i, 1); continue; }
+      c.globalAlpha = Math.max(0, 0.9 * (1 - age / 3.4));
+      drawGhost(c, q.x + Math.sin(age * 3 + q.ph) * 14, q.y - age * 75);
+      c.globalAlpha = 1;
+      continue;
+    }
+    q.life -= dt;
+    if (q.life <= 0 || q.y > H + 40) { FX.parts.splice(i, 1); continue; }
+    if (q.type === "confetti") { q.vy = Math.min(q.vy + 40 * dt, 130); q.vx += Math.sin(now / 300 + i) * 4 * dt; }
+    else q.vy += 560 * dt;
+    q.x += q.vx * dt; q.y += q.vy * dt;
+    if (q.vr) q.rot += q.vr * dt;
+    if (q.type === "debris") {
+      c.save(); c.translate(q.x, q.y); c.rotate(q.rot);
+      c.fillStyle = "#34332f"; c.fillRect(-q.size / 2, -q.size / 3, q.size, q.size * 0.66);
+      c.fillStyle = "#6c6a63"; c.fillRect(-q.size / 4, -q.size / 6, q.size / 2, q.size / 3);
+      c.restore();
+    } else if (q.type === "spark") {
+      c.fillStyle = "rgba(255," + (140 + ((i * 37) % 100)) + ",40," + Math.min(1, q.life / 0.35) + ")";
+      c.fillRect(q.x - 2.5, q.y - 2.5, 5, 5);
+    } else if (q.type === "drop") {
+      c.fillStyle = q.color; c.beginPath(); c.arc(q.x, q.y, q.size, 0, Math.PI * 2); c.fill();
+    } else if (q.type === "confetti") {
+      c.save(); c.translate(q.x, q.y); c.rotate(q.rot); c.fillStyle = q.color; c.fillRect(-5, -3, 10, 6); c.restore();
+    }
+  }
+}
+function drawGhost(c, x, y) {
+  c.save(); c.translate(x, y);
+  c.fillStyle = "rgba(255,255,255,0.92)";
+  c.beginPath(); c.moveTo(-14, 0); c.lineTo(-25, -9); c.lineTo(-25, 9); c.closePath(); c.fill();
+  c.beginPath(); c.ellipse(0, 0, 17, 9, 0, 0, Math.PI * 2); c.fill();
+  c.beginPath(); c.moveTo(-12, 6); c.quadraticCurveTo(-4, 16, 4, 8); c.quadraticCurveTo(10, 15, 14, 5); c.fill();
+  c.strokeStyle = "rgba(255,225,90,0.95)"; c.lineWidth = 2.5;
+  c.beginPath(); c.ellipse(2, -16, 10, 3.5, 0, 0, Math.PI * 2); c.stroke();
+  c.fillStyle = "#4a4a4a"; c.beginPath(); c.arc(8, -2, 2, 0, Math.PI * 2); c.fill();
+  c.restore();
+}
+function drawToxic(c, p, f, now, an) {
+  const at = FX.toxicAt[p];
+  const tx = p === 1 ? f.tx1 : f.tx2;
+  if (at == null && !(tx > 0.02)) return;
+  const pd = PONDS[p];
+  const bx = pd.cx + (p === 1 ? 72 : -72), surf = pd.cy - 10;
+  const age = at == null ? 99 : Math.max(0, (now - at) / 1000);
+  const fall = 0.85;
+  let by, rot;
+  if (age < fall) { const k = age / fall; by = -50 + (surf + 50) * k * k; rot = k * 7; }
+  else { by = surf + Math.sin(an / 500) * 2.5; rot = 0.55 + Math.sin(an / 700) * 0.08; }
+  if (age >= fall && !FX.splashed[p]) {
+    FX.splashed[p] = true;
+    if (!reduceMotion) for (let i = 0; i < 26; i++) {
+      const a = -Math.PI * (0.1 + 0.8 * Math.random());
+      const v = 120 + Math.random() * 200;
+      FX.parts.push({ type: "drop", x: bx, y: surf, vx: Math.cos(a) * v, vy: Math.sin(a) * v, size: 2 + Math.random() * 3, color: i % 3 ? "rgba(150,220,80,0.9)" : "rgba(255,255,255,0.9)", life: 1.4 });
+    }
+  }
+  if (age >= fall && age < fall + 1.6) {
+    const s = (age - fall) / 1.6;
+    c.strokeStyle = "rgba(170,235,90," + (1 - s) + ")"; c.lineWidth = 3;
+    for (let r = 0; r < 3; r++) {
+      const rad = s * 110 - r * 26;
+      if (rad > 0) { c.beginPath(); c.ellipse(bx, surf + 8, rad, rad * 0.33, 0, 0, Math.PI * 2); c.stroke(); }
+    }
+  }
+  if (tx > 0.05 && age >= fall && !reduceMotion && !FX.frozenAt && Math.random() < Math.min(0.8, tx)) {
+    bubbles[p].push({ x: bx + (Math.random() - 0.5) * 30, y: surf + 14, v: 0.25 + Math.random() * 0.4, r: 2 + Math.random() * 4, life: 1, green: true });
+  }
+  c.save(); c.translate(bx, by); c.rotate(rot);
+  c.fillStyle = "#e9b919"; rr(c, -14, -19, 28, 38, 5); c.fill();
+  c.fillStyle = "#2b2b2b"; c.fillRect(-14, -10, 28, 4); c.fillRect(-14, 7, 28, 4);
+  c.fillStyle = "#5aa31c"; c.beginPath(); c.arc(0, -1, 4.5, 0, Math.PI * 2); c.fill();
+  c.restore();
+}
+function drawFrozen(c, now) {
+  const a = Math.max(0, Math.min(1, (now - FX.frozenAt) / 700));
+  c.fillStyle = "rgba(175,215,245," + (0.5 * a) + ")"; c.fillRect(0, 0, W, H);
+  c.strokeStyle = "rgba(255,255,255," + (0.95 * a) + ")"; c.lineWidth = 2.5; c.lineCap = "round";
+  const flakes = [[30, 70, 26], [80, 30, 16], [70, 110, 12], [960, 60, 24], [920, 25, 14], [940, 120, 12], [40, 400, 22], [95, 420, 13], [955, 400, 24], [900, 425, 14]];
+  for (const [x, y, r0] of flakes) {
+    const r = r0 * a;
+    for (let k = 0; k < 6; k++) {
+      const ang = k * Math.PI / 3;
+      c.beginPath(); c.moveTo(x, y); c.lineTo(x + Math.cos(ang) * r, y + Math.sin(ang) * r); c.stroke();
+      c.beginPath(); c.moveTo(x + Math.cos(ang) * r * 0.6, y + Math.sin(ang) * r * 0.6); c.lineTo(x + Math.cos(ang + 0.5) * r * 0.85, y + Math.sin(ang + 0.5) * r * 0.85); c.stroke();
+    }
+  }
+  const pop = a < 1 ? 1 + Math.sin(a * Math.PI) * 0.15 : 1;
+  const cx = W / 2, cy = 250, R = 62 * a * pop;
+  if (R < 2) return;
+  c.fillStyle = "#ffffff"; c.beginPath(); c.arc(cx, cy, R, 0, Math.PI * 2); c.fill();
+  c.strokeStyle = "#15302a"; c.lineWidth = 6; c.stroke();
+  c.lineWidth = 3;
+  for (let k = 0; k < 12; k++) { const ang = k * Math.PI / 6; c.beginPath(); c.moveTo(cx + Math.cos(ang) * R * 0.8, cy + Math.sin(ang) * R * 0.8); c.lineTo(cx + Math.cos(ang) * R * 0.92, cy + Math.sin(ang) * R * 0.92); c.stroke(); }
+  c.lineWidth = 5; c.beginPath(); c.moveTo(cx, cy); c.lineTo(cx + R * 0.45, cy - R * 0.2); c.stroke();
+  c.lineWidth = 3.5; c.beginPath(); c.moveTo(cx, cy); c.lineTo(cx - R * 0.15, cy - R * 0.7); c.stroke();
+  c.strokeStyle = "#7fb6dd"; c.lineWidth = 2.5;
+  c.beginPath(); c.moveTo(cx - R * 0.9, cy - R * 0.35); c.lineTo(cx - R * 0.45, cy - R * 0.1); c.lineTo(cx - R * 0.55, cy + R * 0.2); c.lineTo(cx - R * 0.1, cy + R * 0.45); c.lineTo(cx + R * 0.2, cy + R * 0.9); c.stroke();
+}
+function drawFireBurst(c, now) {
+  const a = Math.max(0, (now - FX.fireAt) / 1000);
+  const cx = MOTOR.x + MOTOR.w / 2, cy = MOTOR.y + MOTOR.h / 2;
+  if (a < 0.45) { c.fillStyle = "rgba(255," + Math.round(220 - a * 300) + ",120," + (0.7 * (1 - a / 0.45)) + ")"; c.fillRect(0, 0, W, H); }
+  if (a < 0.75) {
+    const k = a / 0.75;
+    c.strokeStyle = "rgba(255,150,50," + (1 - k) + ")"; c.lineWidth = 10 * (1 - k) + 1;
+    c.beginPath(); c.arc(cx, cy, k * 280, 0, Math.PI * 2); c.stroke();
+  }
+  if (a < 1.6) {
+    const pop = Math.min(1, a / 0.18);
+    c.save(); c.translate(cx - 150, cy - 40); c.rotate(-0.12); c.scale(pop, pop);
+    c.font = "600 54px Fredoka, sans-serif"; c.textAlign = "center"; c.textBaseline = "middle";
+    c.lineJoin = "round"; c.lineWidth = 9; c.strokeStyle = "#5a1a0e"; c.strokeText("KABOOM!", 0, 0);
+    c.fillStyle = "#ffd23f"; c.fillText("KABOOM!", 0, 0);
+    c.restore(); c.textAlign = "left"; c.textBaseline = "alphabetic";
+  }
+}
+
+// ---------------------------------------------------------------- loop
+let lastTs = performance.now();
+function frame(ts) {
+  requestAnimationFrame(frame);
+  ts = Math.max(ts, lastTs);
+  const dt = Math.min(0.25, (ts - lastTs) / 1000); lastTs = ts;
+  frameNow = ts;
+  try {
+    advance(dt);
+    const f = frameAt(P.data ? P.t : 0);
+    drawScene(f, ts);
+    drawChart(f);
+    renderStatus(f);
+  } catch (err) {
+    if (window.console) console.error(err);
+  }
+}
+requestAnimationFrame(frame);
+if (window.__POND_FORCE_MAIN) fallbackToMain(); else startWorker();
+window.__pond = { P, startRun };
+})();
+</script>
+</body>
+</html>
