@@ -1,24 +1,31 @@
 # Pond Rescue
 
-SOEE2810, week 7 practical. Students learn Python by running a fish farm's aerator: they write the code, press Run, and watch it play out hour by hour, with the line that's running lit up as it goes. Seven short levels build up to the full challenge.
+SOEE2810, week 7 practical. Students learn Python by running a fish farm's aerator: 14 short questions, each one a bit of code they write, run, and watch play out hour by hour, with the line that's running lit up as it goes. The last question is the full challenge.
 
 **Play it:** https://alexborowiak.github.io/SOEE2810_week07/
 
 Nothing to install. Python runs in the browser with [Pyodide](https://pyodide.org), loaded from the jsDelivr CDN (about 10 MB the first time, so students need internet access). Each student's code and progress are saved in their own browser.
 
-## The levels
+## The questions
 
-| Level | New Python | The task |
+| # | Question | Python |
 |---|---|---|
-| 1. Test the water | calling functions, variables, `print()` | Read the pond sensor twice, 3 hours apart, and print the change |
-| 2. Sensor log | `for` loops, lists, `max()`, `sum()`, `len()` | Log a reading every 3 hours through a storm; print the highest and the average |
-| 3. Switch it on | `if` / `else`, comparisons | Motor on only if pollution is above 3. Tested on three mornings, one of them exactly 3.0 |
-| 4. Keep watch | `while` loops | On/off control through two days of storm overflows |
-| 5. Too hot | nested loops | A long storm: let the motor cool down so it doesn't catch fire |
-| 6. Two ponds | `def`, parameters | Write `clean(pond)` and use it to look after both ponds |
-| 7. Pond Rescue | all of it | Four days, three storm overflows and a toxic spill. Bonus: fewest motor hours |
+| 1 | Read the sensor and print it | calling a function |
+| 2 | Is it getting worse? Print the change over 3 hours | variables |
+| 3 | Four readings, 3 hours apart | `for` loops |
+| 4 | Highest and average of a day's readings | lists, `max`, `sum`, `len` |
+| 5 | Switch the motor on if the pond is above 3 (three test mornings, one exactly 3.0) | `if` |
+| 6 | Print danger, warning or ok | `elif` |
+| 7 | Move the hose to the dirtier pond | comparing values |
+| 8 | Wait for the storm, then switch on | `while` |
+| 9 | Keep the motor on until the pond is clean | `while` |
+| 10 | Keep watch through two days of storms | `while True` |
+| 11 | Stop the motor overheating | nested loops |
+| 12 | Write `report(pond)` | `def` |
+| 13 | Write `clean(pond)` for two ponds | functions and loops |
+| 14 | Pond Rescue: 4 days, 3 storms, a toxic spill. Bonus: fewest motor hours | everything |
 
-Every level has a short story, the task, a Python reminder, questions to think about, a hint and an answer. The code is checked automatically, with a specific message for each classic mistake: the motor catches fire, a pond is left too early, the hose is moved with the motor running (the farmer gets soaked), a loop has no `wait()` (time stops), or a typo (with "Did you mean...?").
+Each question is checked automatically, some against more than one test case so hard-coding doesn't pass, with a specific message for each classic mistake: the motor catches fire, a pond is left too early, the hose is moved with the motor running (the farmer gets soaked), a loop has no `wait()` (time stops), or a typo (with "Did you mean...?").
 
 ## Seeing what the code does
 
@@ -31,14 +38,14 @@ After Run, the page replays the run:
 
 ## Answers
 
-Each level has a small "Show answer" link next to the hint. It opens the answer blurred until the student clicks "I've had a go: show me", along with answers to that level's questions. The answers are in the page source (it's a static page), so a determined student can find them.
+Each question has a small "Answer" link next to the hint. It opens the answer blurred until the student clicks "I've had a go: show me". The answers are in the page source (it's a static page), so a determined student can find them.
 
 ## Files
 
-- `pond_engine.py`: the simulation, the student functions and the levels. Each level's story, starter code, answer, hint, questions and scenario numbers are in `LEVELS` at the bottom.
-- `page_template.html`: the page (level picker, editor, playback, animation, chart, function guide).
-- `build.py`: puts the engine and the level text into the template and writes `index.html`.
-- `check_scenario.py`: runs every level's answer (must pass) and the classic mistakes (must fail the expected way).
+- `pond_engine.py`: the simulation, the student functions and the questions. Each question's task, starter code, hint, answer, test cases and check are in `LEVELS` at the bottom.
+- `page_template.html`: the page (question picker, editor, playback, animation, chart, function guide).
+- `build.py`: puts the engine and the question text into the template and writes `index.html`.
+- `check_scenario.py`: runs every question's answer (must pass) and the classic mistakes (must fail the expected way).
 - `index.html`: the built page that GitHub Pages serves. Don't edit it by hand.
 
 ## Changing it

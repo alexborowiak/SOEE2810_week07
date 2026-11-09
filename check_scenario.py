@@ -1,5 +1,5 @@
-"""Checks every level still works: each level's answer (the one the page reveals) passes, its starter
-code runs, and the classic mistakes fail the way they should. Level 7, the final challenge, is tuned so
+"""Checks every question still works: each question's answer (the one the page reveals) passes, its starter
+code fails, and the classic mistakes fail the way they should. Question 14, the final challenge, is tuned so
 its answer only just survives (peak pollution about 7.7).
 
 Run:  python check_scenario.py
@@ -27,27 +27,64 @@ while True:
         wait()
 """
 
-# level -> [(name, code, expected)]. expected is the outcome, or one outcome per test case.
+# question -> [(name, code, expected)]. expected is the outcome, or one outcome per test case.
 CHECKS = {
     1: [
+        ("answer", ANSWER, "win"),
+        ("starter", STARTER, "lose"),
+        ("no_print", "x = pollution(1)\n", "lose"),
+        ("print_text", 'print("pollution(1)")\n', "lose"),
+    ],
+    2: [
         ("answer", ANSWER, "win"),
         ("starter", STARTER, "lose"),
         ("no_change", "a = pollution(1)\nprint(a)\nwait()\nb = pollution(1)\nprint(b)\n", "lose"),
         ("no_wait", "a = pollution(1)\nb = pollution(1)\nprint(b - a)\n", "lose"),
     ],
-    2: [
+    3: [
+        ("answer", ANSWER, "win"),
+        ("starter", STARTER, "lose"),
+        ("no_wait", "for i in range(4):\n    print(pollution(1))\n", "lose"),
+        ("no_print", "for i in range(4):\n    x = pollution(1)\n    wait()\n", "lose"),
+    ],
+    4: [
         ("answer", ANSWER, "win"),
         ("starter", STARTER, "lose"),
         ("list_only", "r = []\nfor i in range(8):\n    r.append(pollution(1))\n    wait()\nprint(r)\n", "lose"),
-        ("no_wait", "r = []\nfor i in range(8):\n    r.append(pollution(1))\nprint(max(r), sum(r) / len(r))\n", "lose"),
+        ("no_wait", "r = []\nfor i in range(8):\n    r.append(pollution(1))\nprint(max(r))\nprint(sum(r) / len(r))\n", "lose"),
     ],
-    3: [
+    5: [
         ("answer", ANSWER, ("win", "win", "win")),
         ("starter", STARTER, ("lose", "win", "win")),
         ("always_on", "motor_on()\n", ("win", "lose", "lose")),
         ("greater_eq", "if pollution(1) >= 3:\n    motor_on()\n", ("win", "win", "lose")),
     ],
-    4: [
+    6: [
+        ("answer", ANSWER, ("win", "win", "win")),
+        ("starter", STARTER, ("win", "lose", "lose")),
+        ("wrong_order", 'level = pollution(1)\nif level > 3:\n    print("warning")\nelif level > 6:\n    print("danger")\nelse:\n    print("ok")\n', ("lose", "win", "win")),
+        ("two_ifs", 'level = pollution(1)\nif level > 6:\n    print("danger")\nif level > 3:\n    print("warning")\nelse:\n    print("ok")\n', ("lose", "win", "win")),
+    ],
+    7: [
+        ("answer", ANSWER, ("win", "win")),
+        ("starter", STARTER, ("lose", "lose")),
+        ("always_pond2", "switch_to(2)\nmotor_on()\n", ("lose", "win")),
+        ("never_switch", "motor_on()\n", ("win", "lose")),
+    ],
+    8: [
+        ("answer", ANSWER, ("win", "win")),
+        ("starter", STARTER, ("lose", "lose")),
+        ("hard_coded", "wait(15)\nmotor_on()\n", ("win", "lose")),
+        ("if_not_while", "if pollution(1) <= 3:\n    wait()\nmotor_on()\n", ("lose", "lose")),
+        ("no_wait", "while pollution(1) <= 3:\n    pass\nmotor_on()\n", ("frozen", "frozen")),
+    ],
+    9: [
+        ("answer", ANSWER, ("win", "win")),
+        ("starter", STARTER, ("lose", "lose")),
+        ("hard_coded", "motor_on()\nwait()\nmotor_off()\n", ("win", "lose")),
+        ("check_after", "motor_on()\nwait()\nwhile pollution(1) > 3:\n    wait()\nmotor_off()\n", ("win", "lose")),
+    ],
+    10: [
         ("answer", ANSWER, "win"),
         ("starter", STARTER, "lose"),
         ("never_off", "while True:\n    if pollution(1) > 3:\n        motor_on()\n    wait()\n", "lose"),
@@ -55,21 +92,28 @@ CHECKS = {
         ("no_loop", "if pollution(1) > 3:\n    motor_on()\n", "lose"),
         ("no_wait", "while True:\n    if pollution(1) > 3:\n        motor_on()\n", "frozen"),
     ],
-    5: [
+    11: [
         ("answer", ANSWER, "win"),
         ("starter", STARTER, "lose"),
-        ("level4_code", LEVEL[4]["answer"], "lose"),
+        ("q10_code", LEVEL[10]["answer"], "lose"),
         ("hot70", COOLDOWN.replace("> 50", "> 70"), "lose"),
         ("nothing", "while True:\n    wait()\n", "lose"),
     ],
-    6: [
+    12: [
+        ("answer", ANSWER, "win"),
+        ("starter", STARTER, "lose"),
+        ("pond1_inside", "def report(pond):\n    print(pollution(1))\n\nreport(1)\nreport(2)\n", "lose"),
+        ("one_call", "def report(pond):\n    print(pollution(pond))\n\nreport(1)\n", "lose"),
+        ("no_function", "print(pollution(1))\nprint(pollution(2))\n", "lose"),
+    ],
+    13: [
         ("answer", ANSWER, "win"),
         ("starter", STARTER, "lose"),
         ("pond1_only", COOLDOWN, "lose"),
-        ("no_function", LEVEL[7]["answer"], "lose"),
-        ("no_motor_off", LEVEL[6]["answer"].replace("    motor_off()\n\nwhile", "\nwhile"), "sprayed"),
+        ("no_function", LEVEL[14]["answer"], "lose"),
+        ("no_motor_off", LEVEL[13]["answer"].replace("    motor_off()\n\nwhile", "\nwhile"), "sprayed"),
     ],
-    7: [
+    14: [
         ("answer", ANSWER, "win"),
         ("starter", STARTER, "lose"),
         ("nothing", "\nwhile True:\n    wait()\n", "lose"),
@@ -88,7 +132,7 @@ while True:
         motor_off()
     wait()
 """, "win"),
-        ("level6_answer", LEVEL[6]["answer"], "win"),
+        ("q13_answer", LEVEL[13]["answer"], "win"),
         ("no_cooldown", """
 while True:
     for pond in [1, 2]:
@@ -228,7 +272,7 @@ def main():
             hours = sum(c["result"]["motor_hours"] for c in out["cases"])
             peak = max(max(f[f"p{p}"] for p in range(1, c["ponds"] + 1)) for c in out["cases"] for f in c["frames"])
             show = lambda x: x if isinstance(x, str) else ",".join(x)
-            print(f"{'ok ' if ok else 'BAD'} L{level_id} {name:16s} {show(got):15s} (want {show(want)}) "
+            print(f"{'ok ' if ok else 'BAD'} Q{level_id:<2} {name:16s} {show(got):15s} (want {show(want)}) "
                   f"motor_hours={hours:3d} peak={peak:4.1f}")
     sys.exit(1 if bad else 0)
 

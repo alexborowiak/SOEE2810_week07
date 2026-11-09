@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
-/* Layout: header and level picker, the level brief, then code (left) beside the pond (right).
+/* Layout: a slim bar of question numbers, then the question and code (left) beside the pond (right).
    One fixed light theme; the code editor and output log are dark, like a real editor. */
 :root {
   --paper: #edf2ee;
@@ -31,88 +31,49 @@
   --font-display: "Fredoka", "Trebuchet MS", system-ui, sans-serif;
   --font-body: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, "Cascadia Code", Consolas, monospace;
-  --shadow: 0 1px 2px rgba(20, 48, 42, .06), 0 10px 28px -16px rgba(20, 48, 42, .25);
   color-scheme: light;
 }
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
 html, body { margin: 0; }
 body { background: var(--paper); color: var(--ink); font: 16px/1.5 var(--font-body); -webkit-font-smoothing: antialiased; }
-body::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 420px; background: linear-gradient(180deg, #d9ebe4 0%, rgba(237, 242, 238, 0) 100%); pointer-events: none; z-index: -1; }
 button, input, textarea { font: inherit; color: inherit; }
 button { cursor: pointer; }
 :focus-visible { outline: 3px solid #8cc4e6; outline-offset: 2px; }
 code { font-family: var(--font-mono); font-size: .9em; background: #e8efeb; padding: 1px 5px; border-radius: 5px; }
-.app { max-width: 1400px; margin: 0 auto; padding: 22px 20px 48px; display: grid; gap: 16px; }
-.card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); }
+.app { max-width: 1400px; margin: 0 auto; padding: 16px 20px 40px; display: grid; gap: 14px; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; }
 
-/* ---- header ---- */
-.top { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 24px; align-items: end; }
-.eyebrow { font-size: 12.5px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--water); margin: 0 0 4px; }
-h1 { font: 600 40px/1.05 var(--font-display); margin: 0; letter-spacing: .2px; }
-.lede { margin: 6px 0 0; color: var(--muted); max-width: 70ch; }
-.progress { font-size: 14px; color: var(--muted); text-align: right; }
-.progress .bar { width: 190px; height: 8px; border-radius: 99px; background: var(--paper-2); overflow: hidden; margin: 6px 0 0 auto; }
-.progress .bar i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #3e9d5b, #2c8248); border-radius: 99px; transition: width .5s; }
-@media (max-width: 700px) { .top { grid-template-columns: minmax(0, 1fr); } .progress { text-align: left; } .progress .bar { margin-left: 0; } h1 { font-size: 32px; } }
-
-/* ---- level picker ---- */
-.levels { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px; }
-.lv { display: flex; align-items: center; gap: 9px; padding: 9px 10px; min-width: 0; border: 1px solid var(--line); background: var(--card); border-radius: 12px; text-align: left; transition: border-color .15s, background .15s, color .15s; }
+/* ---- top bar and question picker ---- */
+.top { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 24px; }
+h1 { font: 700 24px/1.1 var(--font-body); margin: 0; }
+h1 small { font-size: 14px; font-weight: 400; color: var(--muted); margin-left: 6px; }
+.levels { display: flex; flex-wrap: wrap; gap: 5px; margin-left: auto; }
+.lv { width: 34px; height: 34px; padding: 0; border-radius: 8px; border: 1px solid var(--line); background: var(--card); font-weight: 700; font-size: 14px; font-variant-numeric: tabular-nums; }
 .lv:hover { border-color: #9fb7ad; }
-.lv .n { flex: none; width: 27px; height: 27px; border-radius: 50%; display: grid; place-items: center; background: var(--paper); font: 600 14px var(--font-display); color: var(--ink-2); }
-.lv .n svg { width: 14px; height: 14px; }
-.lv .t { min-width: 0; display: grid; line-height: 1.2; }
-.lv .t b { font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.lv .t small { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.lv.done .n { background: var(--ok); color: #fff; }
+.lv.done { background: var(--ok-bg); border-color: #b5dcc2; color: var(--ok-ink); }
 .lv.on { background: var(--ink); border-color: var(--ink); color: #fff; }
-.lv.on .n { background: #fff; color: var(--ink); }
-.lv.on.done .n { background: #8fdcaa; color: var(--ink); }
-.lv.on .t small { color: #a9c4bb; }
-@media (max-width: 1180px) { .levels { display: flex; overflow-x: auto; padding-bottom: 4px; scrollbar-width: thin; } .lv { flex: none; } }
 
-/* ---- level brief ---- */
-.brief { padding: 18px 20px 14px; display: grid; gap: 14px; }
-.brief-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 8px 16px; }
-.kicker { font-size: 12.5px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
-.brief h2 { font: 600 27px/1.15 var(--font-display); margin: 2px 0 0; }
-.tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
-.tags li { font-size: 13px; font-weight: 700; padding: 3px 10px; border-radius: 99px; background: #e2eff7; color: #17577a; }
-.brief-grid { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 18px; align-items: start; }
-@media (max-width: 900px) { .brief-grid { grid-template-columns: minmax(0, 1fr); } }
-.story p { margin: 0 0 8px; max-width: 72ch; }
-.task { margin-top: 6px; padding: 12px 14px; background: #eef6fb; border: 1px solid #d0e4f0; border-left: 4px solid var(--water); border-radius: 10px; }
-.task .label, .side-label { font: 600 12.5px var(--font-display); letter-spacing: .08em; text-transform: uppercase; }
-.task .label { color: var(--water); }
-.task p { margin: 3px 0 0; font-size: 16.5px; }
-.task .tests-note { font-size: 14px; color: var(--muted); margin-top: 6px; }
-.side-label { color: var(--muted); margin-bottom: 6px; }
+/* ---- the question ---- */
+.question { display: grid; gap: 6px; padding: 2px 2px 4px; }
+.qmeta { font-size: 13px; color: var(--muted); }
+.question h2 { font: 700 21px/1.2 var(--font-body); margin: 0; }
+.question .task { margin: 0; font-size: 16.5px; }
+.qlinks { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 16px; font-size: 14.5px; }
+.link { border: 0; background: none; padding: 0; color: var(--water); font-weight: 700; }
+.link:hover { text-decoration: underline; text-underline-offset: 3px; }
+.answer-link { margin-left: auto; border: 0; background: none; padding: 0; color: var(--muted); font-size: 13px; display: inline-flex; gap: 5px; align-items: center; opacity: .7; }
+.answer-link svg { width: 12px; height: 12px; }
+.answer-link:hover { opacity: 1; color: var(--ink); }
+.hint { margin: 0; padding: 8px 12px; background: #eef6fb; border-radius: 8px; font-size: 15px; }
 pre.code-block { margin: 0; padding: 12px 14px; background: var(--dark); color: var(--dark-ink); border-radius: 10px; font: 13.5px/1.6 var(--font-mono); overflow-x: auto; white-space: pre; font-variant-ligatures: none; }
-.tips ul { margin: 0; padding-left: 18px; display: grid; gap: 6px; font-size: 15px; }
-.brief-foot { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 8px 10px; border-top: 1px solid var(--line-2); padding-top: 12px; }
-details.fold { border: 1px solid var(--line); border-radius: 10px; background: var(--card); }
-details.fold > summary { padding: 6px 12px; font-weight: 700; font-size: 14.5px; list-style: none; display: flex; align-items: center; gap: 8px; cursor: pointer; border-radius: 10px; }
-details.fold > summary::-webkit-details-marker { display: none; }
-details.fold > summary::before { content: ""; width: 6px; height: 6px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(-45deg); transition: transform .15s; }
-details.fold[open] > summary::before { transform: rotate(45deg); }
-details.fold[open] { flex-basis: 100%; }
-details.fold .count { font-size: 12px; background: var(--paper); border-radius: 99px; padding: 0 7px; color: var(--muted); }
-.fold-body { padding: 0 14px 12px; font-size: 15px; }
-.fold-body p { margin: 0; }
-ol.qs { margin: 0; padding-left: 20px; display: grid; gap: 6px; }
-.small-btn { border: 1px solid var(--line); background: var(--card); border-radius: 10px; padding: 6px 12px; font-size: 14px; font-weight: 700; }
-.small-btn:hover { border-color: #9fb7ad; background: #f6faf7; }
-.answer-link { margin-left: auto; border: 0; background: none; color: var(--muted); font-size: 13px; padding: 6px 8px; border-radius: 8px; display: inline-flex; gap: 6px; align-items: center; opacity: .7; }
-.answer-link svg { width: 13px; height: 13px; }
-.answer-link:hover { opacity: 1; background: var(--paper); color: var(--ink); }
 
 /* ---- work area ---- */
 .work { display: grid; grid-template-columns: minmax(0, .94fr) minmax(0, 1.06fr); gap: 16px; align-items: start; }
 @media (max-width: 1080px) { .work { grid-template-columns: minmax(0, 1fr); } }
-@media (max-width: 520px) { .app { padding: 16px 12px 40px; } .brief { padding: 14px; } .transport { flex-wrap: wrap; } #scrub { order: 9; flex-basis: 100%; } }
+@media (max-width: 520px) { .app { padding: 16px 12px 40px; } .transport { flex-wrap: wrap; } #scrub { order: 9; flex-basis: 100%; } }
 .col { display: grid; gap: 16px; min-width: 0; }
-.editor-card { padding: 12px; display: grid; gap: 10px; }
+.editor-card { padding: 14px; display: grid; gap: 10px; }
 .toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .btn { border: 1px solid var(--line); background: var(--card); border-radius: 10px; padding: 7px 14px; font-weight: 700; font-size: 15px; display: inline-flex; align-items: center; gap: 8px; }
 .btn:hover:not(:disabled) { border-color: #9fb7ad; background: #f6faf7; }
@@ -126,7 +87,7 @@ ol.qs { margin: 0; padding-left: 20px; display: grid; gap: 6px; }
 .spacer { flex: 1; }
 .load-note { font-size: 13.5px; color: var(--muted); }
 
-.editor { position: relative; display: grid; grid-template-columns: auto minmax(0, 1fr); height: 400px; background: var(--dark); border: 1px solid #0a1513; border-radius: 12px; overflow: hidden; }
+.editor { position: relative; display: grid; grid-template-columns: auto minmax(0, 1fr); height: 330px; background: var(--dark); border: 1px solid #0a1513; border-radius: 12px; overflow: hidden; }
 .gutter { position: relative; overflow: hidden; background: var(--dark-2); border-right: 1px solid var(--dark-line); min-width: 48px; user-select: none; }
 .gutter-inner { padding: 12px 0; will-change: transform; }
 .gutter .ln { position: relative; height: 21px; padding: 0 10px 0 16px; font: 13px/21px var(--font-mono); color: #4a665e; text-align: right; }
@@ -169,7 +130,7 @@ textarea#code::selection { background: rgba(111, 211, 255, .3); color: transpare
 .log-head b { color: var(--ink); font-size: 14px; }
 .switch { display: inline-flex; align-items: center; gap: 7px; cursor: pointer; user-select: none; }
 .switch input { accent-color: var(--water); width: 15px; height: 15px; }
-.log { background: var(--dark); color: var(--dark-ink); border-radius: 12px; height: 200px; overflow: auto; font: 12.5px/1.6 var(--font-mono); padding: 6px 0; scrollbar-color: #2c4640 transparent; }
+.log { background: var(--dark); color: var(--dark-ink); border-radius: 12px; height: 170px; overflow: auto; font: 12.5px/1.6 var(--font-mono); padding: 6px 0; scrollbar-color: #2c4640 transparent; }
 .log .row { display: grid; grid-template-columns: 8.6ch 3.4ch minmax(0, 1fr); gap: 8px; padding: 0 12px; cursor: pointer; }
 .log .row:hover { background: rgba(255, 255, 255, .04); }
 .log .row.cur { background: rgba(111, 211, 255, .13); }
@@ -205,14 +166,6 @@ textarea#code::selection { background: rgba(111, 211, 255, .3); color: transpare
 .speeds button + button { border-left: 1px solid var(--line); }
 .speeds button[aria-pressed="true"] { background: var(--ink); color: #fff; }
 @media (max-width: 560px) { .tlabel { display: none; } }
-.statusbar { display: flex; flex-wrap: wrap; gap: 6px; padding: 9px 12px; border-top: 1px solid var(--line); min-height: 47px; }
-.chip { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px; background: var(--paper); font-size: 13.5px; font-variant-numeric: tabular-nums; white-space: nowrap; }
-.chip b { font-weight: 700; }
-.chip.ok { background: var(--ok-bg); color: var(--ok-ink); }
-.chip.warn { background: var(--warn-bg); color: var(--warn-ink); }
-.chip.bad { background: var(--bad-bg); color: var(--bad-ink); }
-.chip.storm { background: #e3e6ef; color: #3b4a6b; }
-.chip .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
 #chart { display: block; width: 100%; height: auto; aspect-ratio: 1000 / 190; border-top: 1px solid var(--line); background: #fbfcfb; cursor: crosshair; touch-action: none; }
 .result { border-top: 1px solid var(--line); padding: 12px 14px; display: grid; gap: 10px; }
 .tests { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
@@ -224,31 +177,29 @@ textarea#code::selection { background: rgba(111, 211, 255, .3); color: transpare
 .test.fail .mk { background: var(--bad); }
 .test.cur { border-color: var(--ink); box-shadow: 0 0 0 2px rgba(20, 48, 42, .12); }
 .verdict { display: flex; align-items: flex-start; gap: 10px; flex-wrap: wrap; }
-.verdict .tag { flex: none; font: 600 14px var(--font-display); padding: 2px 11px; border-radius: 999px; margin-top: 2px; background: var(--paper); color: var(--muted); }
+.verdict .tag { flex: none; font: 700 14px var(--font-body); padding: 2px 11px; border-radius: 999px; margin-top: 2px; background: var(--paper); color: var(--muted); }
 .verdict p { margin: 0; flex: 1 1 260px; font-size: 16.5px; }
 .result.win .tag { background: var(--ok-bg); color: var(--ok-ink); }
 .result.lose .tag { background: var(--bad-bg); color: var(--bad-ink); }
 .result.info .tag { background: var(--warn-bg); color: var(--warn-ink); }
 .result.win { background: linear-gradient(180deg, #f2faf4, #fff); }
 
-.guide { padding: 14px 16px; }
-.guide h2 { font: 600 19px var(--font-display); margin: 0 0 10px; }
+.guide > summary { padding: 10px 14px; font-weight: 700; cursor: pointer; }
+.guide > div { padding: 0 14px 14px; }
 .fns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 20px; margin: 0; }
 @media (max-width: 620px) { .fns { grid-template-columns: 1fr; } }
-.fns div { display: grid; gap: 1px; transition: opacity .2s; }
+.fns div { display: grid; gap: 1px; }
 .fns dt { font: 600 14px var(--font-mono); color: var(--water); }
 .fns dd { margin: 0; font-size: 14.5px; color: var(--ink-2); }
 .fns .dim { opacity: .4; }
-.rules { margin-top: 12px; padding: 10px 12px; background: var(--paper); border-radius: 10px; font-size: 14.5px; display: grid; gap: 3px; }
-.keys { font-size: 13px; color: var(--muted); margin-top: 10px; }
-footer { font-size: 13px; color: var(--muted); text-align: center; padding-top: 8px; }
+.keys { font-size: 13px; color: var(--muted); margin-top: 12px; }
 
 /* ---- answer dialog ---- */
 dialog.dlg { border: 0; padding: 0; border-radius: 16px; width: min(760px, calc(100vw - 24px)); max-height: calc(100vh - 40px); color: var(--ink); box-shadow: 0 30px 80px -20px rgba(10, 30, 25, .5); }
 dialog.dlg::backdrop { background: rgba(12, 28, 24, .5); backdrop-filter: blur(3px); }
 .dlg-inner { padding: 18px 20px 20px; display: grid; gap: 12px; max-height: calc(100vh - 40px); overflow: auto; }
 .dlg-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
-.dlg-head h2 { font: 600 23px var(--font-display); margin: 0; }
+.dlg-head h2 { font: 700 21px var(--font-body); margin: 0; }
 .dlg-head p { margin: 2px 0 0; color: var(--muted); font-size: 14.5px; }
 .veil { position: relative; border-radius: 10px; overflow: hidden; }
 .veil pre { transition: filter .35s; }
@@ -256,11 +207,6 @@ dialog.dlg::backdrop { background: rgba(12, 28, 24, .5); backdrop-filter: blur(3
 .veil .reveal { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(15, 29, 26, .25); }
 .veil:not(.hidden) .reveal { display: none; }
 .dlg-actions { display: flex; flex-wrap: wrap; gap: 8px; }
-.dlg h3 { font: 600 17px var(--font-display); margin: 4px 0 0; }
-.qa { margin: 0; padding-left: 20px; display: grid; gap: 10px; }
-.qa .q { font-weight: 700; margin: 0; }
-.qa .a { margin: 2px 0 0; color: var(--ink-2); }
-
 .toast { position: fixed; left: 50%; bottom: 22px; transform: translate(-50%, 16px); background: var(--ink); color: #fff; padding: 10px 16px; border-radius: 12px; font-size: 14.5px; opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; z-index: 60; box-shadow: 0 12px 30px -10px rgba(0, 0, 0, .4); max-width: calc(100vw - 32px); }
 .toast.show { opacity: 1; transform: translate(-50%, 0); }
 @media (prefers-reduced-motion: reduce) { *, *::before { transition: none !important; animation: none !important; } }
@@ -269,44 +215,35 @@ dialog.dlg::backdrop { background: rgba(12, 28, 24, .5); backdrop-filter: blur(3
 <body>
 <div class="app">
   <header class="top">
-    <div>
-      <p class="eyebrow">SOEE2810 · Week 7 practical</p>
-      <h1>Pond Rescue</h1>
-      <p class="lede">Learn Python by running a fish farm's aerator. Write the code, press Run, and watch it play out hour by hour, with the line that's running lit up as it goes.</p>
-    </div>
-    <div class="progress"><span id="progressText">0 of 7 levels done</span><div class="bar"><i id="progressBar"></i></div></div>
+    <h1>Pond Rescue <small>SOEE2810 · week 7</small></h1>
+    <nav class="levels" id="levels" aria-label="Questions"></nav>
   </header>
 
-  <nav class="levels" id="levels" aria-label="Levels"></nav>
-
-  <section class="card brief" id="brief" aria-live="polite"></section>
-
   <main class="work">
-    <div class="col">
-      <section class="card editor-card" aria-label="Your code">
-        <div class="toolbar">
-          <button class="btn primary" id="runBtn" disabled><span class="spin"></span>Loading Python…</button>
-          <span class="load-note" id="loadNote">First load takes about 15 seconds.</span>
-          <span class="spacer"></span>
-          <button class="btn" id="resetBtn" title="Put the starter code back (Ctrl+Z undoes it)">Reset code</button>
+    <section class="card editor-card" aria-label="Question and your code">
+      <div class="question" id="brief" aria-live="polite"></div>
+      <div class="toolbar">
+        <button class="btn primary" id="runBtn" disabled><span class="spin"></span>Loading Python…</button>
+        <span class="load-note" id="loadNote">First load takes about 15 seconds.</span>
+        <span class="spacer"></span>
+        <button class="btn" id="resetBtn" title="Put the starter code back (Ctrl+Z undoes it)">Reset code</button>
+      </div>
+      <div class="editor">
+        <div class="gutter" aria-hidden="true"><div class="gutter-inner" id="gutter"></div></div>
+        <div class="code-area">
+          <div class="band-layer" id="bandLayer"><div class="exec-band" id="execBand"></div></div>
+          <div class="code-layer" id="codeLayer"><pre class="hl" id="hl" aria-hidden="true"></pre></div>
+          <textarea id="code" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" wrap="off" aria-label="Your Python code"></textarea>
         </div>
-        <div class="editor">
-          <div class="gutter" aria-hidden="true"><div class="gutter-inner" id="gutter"></div></div>
-          <div class="code-area">
-            <div class="band-layer" id="bandLayer"><div class="exec-band" id="execBand"></div></div>
-            <div class="code-layer" id="codeLayer"><pre class="hl" id="hl" aria-hidden="true"></pre></div>
-            <textarea id="code" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" wrap="off" aria-label="Your Python code"></textarea>
-          </div>
-        </div>
-        <div class="now" id="now"><span class="pulse"></span><span class="lnum" id="nowLine"></span><span class="txt" id="nowText">Press Run and this shows which line is running.</span><span class="stale" id="nowStale" hidden>code changed since this run</span></div>
-        <div class="log-head"><b>Output</b><label class="switch"><input type="checkbox" id="callsToggle" checked> show every function call</label></div>
-        <div class="log" id="log" aria-label="Output and function calls">
-          <div id="logRows"></div>
-          <div class="empty" id="logEmpty">Anything you print() appears here, stamped with the pond time. So does every function call, so you can see exactly what your code did. Click a line to jump there.</div>
-          <div class="end" id="logEnd" hidden></div>
-        </div>
-      </section>
-    </div>
+      </div>
+      <div class="now" id="now"><span class="pulse"></span><span class="lnum" id="nowLine"></span><span class="txt" id="nowText">Press Run and this shows which line is running.</span><span class="stale" id="nowStale" hidden>code changed since this run</span></div>
+      <div class="log-head"><b>Output</b><label class="switch"><input type="checkbox" id="callsToggle" checked aria-label="Show every function call"> show every function call</label></div>
+      <div class="log" id="log" aria-label="Output and function calls">
+        <div id="logRows"></div>
+        <div class="empty" id="logEmpty"></div>
+        <div class="end" id="logEnd" hidden></div>
+      </div>
+    </section>
 
     <div class="col">
       <section class="card stage" aria-label="Pond simulation">
@@ -319,23 +256,22 @@ dialog.dlg::backdrop { background: rgba(12, 28, 24, .5); backdrop-filter: blur(3
           <div class="speeds" role="group" aria-label="Playback speed" id="speeds"></div>
           <button class="icon-btn" id="skipBtn" disabled aria-label="Skip to the end" title="Skip to the end"></button>
         </div>
-        <div class="statusbar" id="status" aria-live="off"></div>
         <canvas id="chart" width="1000" height="190" aria-label="Chart of pollution and motor temperature over time. Click to jump to a moment."></canvas>
         <div class="result" id="result" aria-live="polite">
           <div class="tests" id="tests" hidden></div>
-          <div class="verdict"><span class="tag" id="resultTag">Ready</span><p id="resultText">Press Run to try your code.</p><button class="btn primary" id="nextBtn" hidden>Next level →</button></div>
+          <div class="verdict"><span class="tag" id="resultTag">Ready</span><p id="resultText">Press Run to try your code.</p><button class="btn primary" id="nextBtn" hidden>Next question →</button></div>
         </div>
       </section>
 
-      <section class="card guide" aria-label="Function guide">
-        <h2>Your functions</h2>
-        <dl class="fns" id="fns"></dl>
-        <div class="rules" id="rules"></div>
-        <div class="keys">Editor: Tab indents, Shift+Tab un-indents, Ctrl+/ comments lines, Ctrl+Enter runs. Press Esc then Tab to leave the code box. Space plays or pauses, → steps.</div>
-      </section>
+      <details class="card guide">
+        <summary>Function guide</summary>
+        <div>
+          <dl class="fns" id="fns"></dl>
+          <div class="keys">Safe: 3 or below. Fish die above 8. The motor catches fire at 100°C.<br>Editor: Tab indents, Shift+Tab un-indents, Ctrl+/ comments lines, Ctrl+Enter runs. Space plays or pauses the replay, → steps.</div>
+        </div>
+      </details>
     </div>
   </main>
-  <footer>Python runs in your browser with Pyodide. Your code and progress are saved in this browser only.</footer>
 </div>
 
 <dialog class="dlg" id="answerDlg" aria-labelledby="dlgTitle">
@@ -349,8 +285,6 @@ dialog.dlg::backdrop { background: rgba(12, 28, 24, .5); backdrop-filter: blur(3
       <div class="reveal"><button class="btn primary" id="revealBtn">I've had a go: show me</button></div>
     </div>
     <div class="dlg-actions"><button class="btn" id="dlgLoad">Put it in the editor</button><button class="btn" id="dlgCopy">Copy</button></div>
-    <h3>The questions</h3>
-    <ol class="qa" id="dlgQs"></ol>
   </div>
 </dialog>
 <div class="toast" id="toast" role="status"></div>
@@ -377,8 +311,8 @@ const $ = (id) => document.getElementById(id);
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const esc = (s) => String(s).replace(/[&<>"]/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[ch]));
 const store = {
-  get(k, d) { try { const v = localStorage.getItem("pondrescue." + k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
-  set(k, v) { try { localStorage.setItem("pondrescue." + k, JSON.stringify(v)); } catch (e) {} },
+  get(k, d) { try { const v = localStorage.getItem("pondrescue-q." + k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem("pondrescue-q." + k, JSON.stringify(v)); } catch (e) {} },
 };
 function clockText(t) {
   const h = START_CLOCK + Math.floor(t + 1e-6);
@@ -572,37 +506,27 @@ function codeFor(l) { const c = store.get("code." + l.id, null); return typeof c
 function renderLevels() {
   $("levels").innerHTML = LEVELS.map((l) => {
     const cls = "lv" + (l.id === level.id ? " on" : "") + (done.has(l.id) ? " done" : "");
-    return '<button class="' + cls + '" data-id="' + l.id + '"' + (l.id === level.id ? ' aria-current="step"' : "") + ">" +
-      '<span class="n">' + (done.has(l.id) ? ICON.check : l.id) + '</span><span class="t"><b>' + esc(l.title) + "</b><small>" +
-      esc(l.concepts[0]) + "</small></span></button>";
+    const name = "Question " + l.id + ": " + l.title + (done.has(l.id) ? " (done)" : "");
+    return '<button class="' + cls + '" data-id="' + l.id + '" title="' + esc(name) + '" aria-label="' + esc(name) + '"' +
+      (l.id === level.id ? ' aria-current="step"' : "") + ">" + l.id + "</button>";
   }).join("");
-  const n = done.size;
-  $("progressText").textContent = n + " of " + LEVELS.length + " levels done";
-  $("progressBar").style.width = (100 * n / LEVELS.length) + "%";
 }
 $("levels").addEventListener("click", (e) => { const b = e.target.closest(".lv"); if (b) selectLevel(Number(b.dataset.id)); });
 function renderBrief() {
   const l = level;
   const prev = LEVELS.find((x) => x.id === l.id - 1);
   const carry = l.carry && prev && typeof store.get("code." + prev.id, null) === "string";
-  let side = "";
-  if (l.reminder) side += '<div class="side-label">Python reminder</div><pre class="code-block">' + highlight(l.reminder.replace(/\n$/, "")) + "</pre>";
-  if (l.tips) side += '<div class="tips"><div class="side-label">Tips</div><ul>' + l.tips.map((t) => "<li>" + inline(t) + "</li>").join("") + "</ul></div>";
   $("brief").innerHTML =
-    '<div class="brief-head"><div><div class="kicker">Level ' + l.id + " of " + LEVELS.length + "</div><h2>" + esc(l.title) + "</h2></div>" +
-    '<ul class="tags" aria-label="New in this level">' + l.concepts.map((c) => "<li>" + esc(c) + "</li>").join("") + "</ul></div>" +
-    '<div class="brief-grid"><div><div class="story">' + paras(l.story) + "</div>" +
-    '<div class="task"><div class="label">Your task</div><p>' + inline(l.task) + "</p>" +
-    (l.tests.length ? '<p class="tests-note">Your code is tested on: ' + l.tests.map(esc).join(" · ") + "</p>" : "") + "</div></div>" +
-    "<aside>" + side + "</aside></div>" +
-    '<div class="brief-foot">' +
-    '<details class="fold"><summary>Questions to think about <span class="count">' + l.questions.length + '</span></summary><div class="fold-body"><ol class="qs">' +
-    l.questions.map((q) => "<li>" + inline(q.q) + "</li>").join("") + "</ol></div></details>" +
-    '<details class="fold"><summary>Hint</summary><div class="fold-body"><p>' + inline(l.hint) + "</p></div></details>" +
-    (carry ? '<button class="small-btn" id="carryBtn">Start from my level ' + prev.id + " code</button>" : "") +
-    '<button class="answer-link" id="answerBtn">' + ICON.lock + "Show answer</button></div>";
+    '<div class="qmeta">Question ' + l.id + " of " + LEVELS.length + " · " + esc(l.topic) + "</div>" +
+    "<h2>" + esc(l.title) + "</h2>" +
+    '<p class="task">' + inline(l.task) + "</p>" +
+    '<div class="qlinks"><button class="link" id="hintBtn" aria-expanded="false">Hint</button>' +
+    (carry ? '<button class="link" id="carryBtn">Use my question ' + prev.id + " code</button>" : "") +
+    '<button class="answer-link" id="answerBtn">' + ICON.lock + "Answer</button></div>" +
+    '<p class="hint" id="hint" hidden>' + inline(l.hint) + "</p>";
+  $("hintBtn").addEventListener("click", (e) => { const h = $("hint"); h.hidden = !h.hidden; e.target.setAttribute("aria-expanded", String(!h.hidden)); });
   $("answerBtn").addEventListener("click", openAnswer);
-  if (carry) $("carryBtn").addEventListener("click", () => { replaceAllCode(codeFor(prev)); toast("Your level " + prev.id + " code is in the editor. Ctrl+Z puts this level's code back."); });
+  if (carry) $("carryBtn").addEventListener("click", () => { replaceAllCode(codeFor(prev)); toast("Your question " + prev.id + " code is in the editor. Ctrl+Z puts this one back."); });
 }
 const FN_INFO = [
   ["pollution", "pollution(pond)", "Reads a pond's sensor and gives back the pollution, e.g. <code>4.2</code>. 3 or below is safe; above 8 the fish die."],
@@ -615,11 +539,6 @@ const FN_INFO = [
 ];
 function renderGuide() {
   $("fns").innerHTML = FN_INFO.map(([k, sig, text]) => '<div class="' + (level.uses.includes(k) ? "" : "dim") + '"><dt>' + sig + "</dt><dd>" + text + "</dd></div>").join("");
-  const r = ["Safe: 3 or below. The fish die above 8."];
-  if (level.uses.includes("motor_on")) r.push("The motor starts off, at 20°C. It catches fire at 100°C.");
-  if (level.ponds === 2) r.push("The air hose starts in pond 1.");
-  r.push("Every run starts at 08:00 on day 1. At 1× speed, one second is one hour.");
-  $("rules").innerHTML = r.map((x) => "<div>" + x + "</div>").join("");
 }
 function selectLevel(id, scroll) {
   const l = LEVELS.find((x) => x.id === id);
@@ -639,7 +558,7 @@ function selectLevel(id, scroll) {
   setNow("", "Press Run and this shows which line is running.", null);
   setResult("idle", "Ready", "Press Run to try your code.");
   updateTransport();
-  if (scroll) $("brief").scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
+  if (scroll) window.scrollTo({ top: 0, behavior: reduceMotion ? "auto" : "smooth" });
 }
 function markDone(id) {
   if (done.has(id)) return;
@@ -649,9 +568,8 @@ function markDone(id) {
 // ---- answer dialog: hidden behind a small button, then a second click to unblur ----
 const dlg = $("answerDlg");
 function openAnswer() {
-  $("dlgTitle").textContent = "Level " + level.id + ": " + level.title;
+  $("dlgTitle").textContent = "Question " + level.id + ": " + level.title;
   $("dlgCode").innerHTML = highlight(level.answer.replace(/\n$/, ""));
-  $("dlgQs").innerHTML = level.questions.map((q) => '<li><p class="q">' + inline(q.q) + '</p><p class="a">' + inline(q.a) + "</p></li>").join("");
   $("veil").classList.add("hidden");
   if (dlg.showModal) dlg.showModal(); else dlg.setAttribute("open", "");
 }
@@ -903,7 +821,7 @@ function showVerdict(live) {
   const failed = run.cases.filter((c) => !c.result.passed);
   if (!failed.length) {
     const r = run.cases[n - 1].result;
-    let text = n > 1 ? "All " + n + " tests passed. Your code made the right call every time." : r.message;
+    let text = n > 1 ? (n === 2 ? "Both tests" : "All " + n + " tests") + " passed. Your code made the right call every time." : r.message;
     if (level.bonus) {
       const best = store.get("best." + level.id, null);
       if (best === null || r.motor_hours < best) { store.set("best." + level.id, r.motor_hours); if (best !== null) text += " New personal best (was " + best + " hours)!"; }
@@ -913,7 +831,7 @@ function showVerdict(live) {
     markDone(level.id);
     if (live) spawnWin();
     const next = LEVELS.find((l) => l.id === level.id + 1);
-    setResult("win", firstTime ? "Level complete" : "Passed", text, next);
+    setResult("win", firstTime ? "Done!" : "Passed", text, next);
     return;
   }
   const c = PB.data.result.passed ? failed[0] : PB.data;
@@ -1042,7 +960,7 @@ function buildLog(d) {
 function clearLog() {
   logRows.innerHTML = ""; PB.rows = []; PB.shown = -1; PB.cur = -1;
   $("logEnd").hidden = true; $("logEmpty").hidden = false;
-  $("logEmpty").textContent = "Anything you print() appears here, stamped with the pond time. So does every function call, so you can see exactly what your code did. Click a line to jump there.";
+  $("logEmpty").textContent = "Your prints and every function call show up here when you run. Click a line to jump to that moment.";
 }
 function updateLog(upto) {
   const rows = PB.rows;
@@ -2024,27 +1942,6 @@ function frameAt(t) {
   if (s && s.motor !== undefined) { f.motor = s.motor && !f.fire; f.target = s.target; f.switching = false; }
   return f;
 }
-function chip(cls, html) { return '<span class="chip ' + cls + '">' + html + "</span>"; }
-let lastStatus = "";
-function renderStatus(f) {
-  const ponds = Object.keys(LAY.ponds).map(Number);
-  let html = chip("", "<b>" + clockText(f.tf) + "</b>");
-  for (const p of ponds) {
-    const v = f["p" + p], dead = f["dead" + p];
-    const cls = dead || v > 6 ? "bad" : v > SAFE ? "warn" : "ok";
-    html += chip(cls, (ponds.length > 1 ? '<span class="dot" style="background:' + POND_COL[p] + '"></span>Pond ' + p + ": " : "Pollution: ") + "<b>" + v.toFixed(1) + "</b>" + (dead ? " (fish dead)" : ""));
-  }
-  if (level.uses.includes("motor_on")) {
-    html += chip(f.fire || f.temp >= 80 ? "bad" : f.temp >= 50 ? "warn" : "ok", "Motor: <b>" + Math.round(f.temp) + "°C</b>");
-    if (f.fire) html += chip("bad", "Motor <b>on fire</b>");
-    else if (f.switching) html += chip("warn", "Moving the hose to pond " + f.target);
-    else html += chip(f.motor ? "ok" : "", "Motor <b>" + (f.motor ? "on" : "off") + "</b>" + (ponds.length > 1 ? " → pond " + f.target : ""));
-  }
-  for (const p of ponds) if ((f["st" + p] || 0) > .18) { html += chip("storm", "Storm overflow" + (ponds.length > 1 ? " into pond " + p : "")); break; }
-  for (const p of ponds) if ((f["tx" + p] || 0) > .08) html += chip("bad", "Toxic leak" + (ponds.length > 1 ? " in pond " + p : ""));
-  if (html !== lastStatus) { $("status").innerHTML = html; lastStatus = html; }
-}
-
 // ================================================================ chart
 const chartCv = $("chart"), cctx = chartCv.getContext("2d"), CW = 1000, CH = 190;
 const CL = 44, CR = 922, CT = 26, CB = 146;
@@ -2203,7 +2100,6 @@ function frame(ts) {
     const f = frameAt(PB.data ? PB.simT : 0);
     drawScene(f, ts, dt);
     drawChart(f);
-    renderStatus(f);
     updateClockUi();
   } catch (err) { if (window.console) console.error(err); }
 }
