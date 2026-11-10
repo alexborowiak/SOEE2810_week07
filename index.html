@@ -154,6 +154,8 @@ textarea#code::selection { background: rgba(111, 211, 255, .3); color: transpare
 .log .row:hover { background: rgba(255, 255, 255, .04); }
 .log .row.cur { background: rgba(111, 211, 255, .13); }
 .log .ts { color: var(--dark-muted); white-space: nowrap; }
+.log.notime .row { grid-template-columns: 3.4ch minmax(0, 1fr); }
+.log.notime .ts { display: none; }
 .log .ln { color: #4a665e; text-align: right; }
 .log .msg { min-width: 0; overflow-wrap: anywhere; }
 .log .fn { color: var(--syn-fn); }
@@ -849,6 +851,9 @@ def _run_case(level, sc, compiled):
 
 def _judge(level, sc, sim, result, ns, called):
     advice = level.get("advice", {})
+    # say when things happened only in questions where time passes (they use wait() or move the hose)
+    timed = bool({"wait", "switch_to"} & set(level["uses"]))
+    on = (lambda t: f" on {clock(t)}") if timed else (lambda t: "")
     outcome = result["outcome"]
     passed = False
     if outcome == "error":
@@ -863,15 +868,15 @@ def _judge(level, sc, sim, result, ns, called):
         dead = [p for p in sc.ponds if sim.fish_dead[p] is not None]
         if sim.motor_dead:
             fire_t = next(e["t"] for e in sim.events if e["kind"] == "fire")
-            message = f"The motor caught fire on {clock(fire_t)}. " + advice.get(
+            message = f"The motor caught fire{on(fire_t)}. " + advice.get(
                 "fire", "Check motor_temp(): when it's hot, switch off and let it cool down.")
         elif dead:
             if len(sc.ponds) == 1:
-                message = f"The fish died on {clock(sim.fish_dead[1])}: pollution went above 8. "
+                message = f"The fish died{on(sim.fish_dead[1])}: pollution went above 8. "
             else:
-                parts = [f"pond {p}'s on {clock(sim.fish_dead[p])}" for p in dead]
+                parts = [f"pond {p}'s{on(sim.fish_dead[p])}" for p in dead]
                 message = "The fish died: " + " and ".join(parts) + ". "
-            if result["code_done"] and result["code_end"] < sc.hours:
+            if timed and result["code_done"] and result["code_end"] < sc.hours:
                 message += (f"Your code finished on {clock(result['code_end'])}, so nothing was looking after "
                             "the pond after that. ")
             message += advice.get("fish", "")
@@ -1843,7 +1848,7 @@ const FN_INFO = [
   ["motor_off", "motor_off()", "Stops the aerator. The motor cools down 8°C an hour."],
   ["switch_to", "switch_to(x)", "Moves the air hose to pond 1 or 2. Takes 3 hours. Switch the motor off first!"],
   ["wait", "wait(x)", "Waits x hours. The sensors only update every 3 hours, so x is 3, 6, 9…"],
-  ["print", "print(…)", "Shows text and numbers in the output, stamped with the pond time."],
+  ["print", "print(…)", "Shows text and numbers in the output."],
 ];
 function renderGuide() {
   $("fns").innerHTML = FN_INFO.map(([k, sig, text]) => '<div class="' + (level.uses.includes(k) ? "" : "dim") + '"><dt>' + sig + "</dt><dd>" + text + "</dd></div>").join("");
@@ -2263,6 +2268,7 @@ function buildLog(d) {
     return '<div class="row call" data-i="' + i + '" hidden>' + head + '<span class="msg">' + callHtml(e) + "</span></div>";
   }).join("");
   PB.rows = Array.from(logRows.children); PB.shown = -1; PB.cur = -1;
+  logBox.classList.toggle("notime", !SHOW.clock);   // no time column when no time passes
   // variables at each step: the engine only sends them when they change, so carry them forward
   PB.snaps = []; let cur = null, prev = null;
   d.log.forEach((e, i) => { if (e.vars) { prev = cur; cur = e.vars; } PB.snaps[i] = [cur, prev]; });
@@ -2324,7 +2330,8 @@ function showLogEnd() {
   else if (r.outcome === "sprayed") { cls = "bad"; text = "✖ The hose was moved with the motor still running."; }
   else {
     cls = r.passed ? "good" : "";
-    text = r.code_done ? "■ Your code finished on " + clockText(r.code_end) + "." + (r.hours > r.code_end ? " The ponds carried on without it until " + clockText(r.hours) + "." : "")
+    text = !SHOW.clock ? "■ Your code finished."
+      : r.code_done ? "■ Your code finished on " + clockText(r.code_end) + "." + (r.hours > r.code_end ? " The ponds carried on without it until " + clockText(r.hours) + "." : "")
       : "■ Time's up: " + clockText(r.hours) + ".";
   }
   el.className = "end " + cls; el.textContent = text; el.hidden = false;

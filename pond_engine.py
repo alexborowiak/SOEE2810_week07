@@ -524,6 +524,9 @@ def _run_case(level, sc, compiled):
 
 def _judge(level, sc, sim, result, ns, called):
     advice = level.get("advice", {})
+    # say when things happened only in questions where time passes (they use wait() or move the hose)
+    timed = bool({"wait", "switch_to"} & set(level["uses"]))
+    on = (lambda t: f" on {clock(t)}") if timed else (lambda t: "")
     outcome = result["outcome"]
     passed = False
     if outcome == "error":
@@ -538,15 +541,15 @@ def _judge(level, sc, sim, result, ns, called):
         dead = [p for p in sc.ponds if sim.fish_dead[p] is not None]
         if sim.motor_dead:
             fire_t = next(e["t"] for e in sim.events if e["kind"] == "fire")
-            message = f"The motor caught fire on {clock(fire_t)}. " + advice.get(
+            message = f"The motor caught fire{on(fire_t)}. " + advice.get(
                 "fire", "Check motor_temp(): when it's hot, switch off and let it cool down.")
         elif dead:
             if len(sc.ponds) == 1:
-                message = f"The fish died on {clock(sim.fish_dead[1])}: pollution went above 8. "
+                message = f"The fish died{on(sim.fish_dead[1])}: pollution went above 8. "
             else:
-                parts = [f"pond {p}'s on {clock(sim.fish_dead[p])}" for p in dead]
+                parts = [f"pond {p}'s{on(sim.fish_dead[p])}" for p in dead]
                 message = "The fish died: " + " and ".join(parts) + ". "
-            if result["code_done"] and result["code_end"] < sc.hours:
+            if timed and result["code_done"] and result["code_end"] < sc.hours:
                 message += (f"Your code finished on {clock(result['code_end'])}, so nothing was looking after "
                             "the pond after that. ")
             message += advice.get("fish", "")
