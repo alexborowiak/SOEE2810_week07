@@ -558,7 +558,8 @@ ed.ta.addEventListener("scroll", edSync);
 // ================================================================ levels
 let level = LEVELS.find((l) => l.id === store.get("level", 1)) || LEVELS[0];
 const done = new Set(store.get("done", []));
-function codeFor(l) { const c = store.get("code." + l.id, null); return typeof c === "string" ? c : l.starter; }
+// saved code from before the editor started empty may begin with the old "# Write your code here" line
+function codeFor(l) { const c = store.get("code." + l.id, null); return typeof c === "string" ? c.replace(/^# Write your code here\s*\n/, "") : l.starter; }
 function renderLevels() {
   $("levels").innerHTML = LEVELS.map((l) => {
     const cls = "lv" + (l.demo ? " demo" : "") + (l.id === level.id ? " on" : "") + (done.has(l.id) ? " done" : "");

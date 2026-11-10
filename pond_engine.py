@@ -930,7 +930,7 @@ def goal_final(sim, sc, ns, called):
 # because calling them isn't the Python skill being practised. Text can use `code` and **bold**.
 # Each answer is what the page reveals and what check_scenario.py tests.
 COOL = {"fire": "Check motor_temp() before switching on. If it's hot, switch off and wait while it cools."}
-BLANK = "# Write your code here\n"
+BLANK = ""   # questions start with an empty editor
 
 LEVELS = [
     {
