@@ -52,6 +52,7 @@ After Run, the page replays the run:
 - The line that's running is highlighted in the editor: blue for a quick call, amber while `wait()` or `switch_to()` lets time pass.
 - The variables panel, beside the output, shows every variable's value at that moment and highlights what just changed (e.g. `i = 2`, was 1), including a function's own variables while it runs. Step (→) goes one line at a time.
 - Each call pops up beside what it touches in the animation, e.g. `pollution(1) → 4.2` at the pond's sensor.
+- Whatever the code prints, a pond keeper in the corner of the animation says it in a speech bubble (and it appears in the output too).
 - The reading card under each pond's sensor shows only what the code has measured: "?" until `pollution()` is called, then the last reading. When the sensor is read, its light flashes and the card pops. The chart works the same way: a new point pops onto its pollution line with each reading, while the motor's temperature is always shown.
 - While `wait()` runs, a big countdown shows the hours left: 3, 2, 1. (The water colour still hints at the real pollution.)
 - The output log lists every print and every function call, with the pond time and line number. Click a line to jump there.

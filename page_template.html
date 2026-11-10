@@ -81,13 +81,20 @@ pre.code-block { margin: 0; padding: 12px 14px; background: var(--dark); color: 
 
 /* ---- work area ---- */
 .app { max-width: 1320px; }
-.work { display: grid; grid-template-columns: minmax(300px, 360px) minmax(0, 1fr); gap: 18px; align-items: start; }
-.side { position: sticky; top: 14px; display: grid; gap: 16px; min-width: 0; }
-.main { display: grid; gap: 16px; min-width: 0; }
-.qcard { padding: 16px; }
-@media (max-width: 1000px) { .work { grid-template-columns: minmax(0, 1fr); } .side, .main { display: contents; } .side .guide { order: 9; } }
+.work { display: grid; grid-template-columns: minmax(0, .82fr) minmax(0, 1.18fr); gap: 16px; align-items: start;
+  grid-template-areas: "q q" "code stage" "io io" "chart chart" "guide guide"; }
+.work > * { min-width: 0; }
+.qcard { grid-area: q; padding: 14px 18px; }
+.editor-card { grid-area: code; align-self: stretch; }
+.stage { grid-area: stage; }
+.io-card { grid-area: io; padding: 12px 14px; }
+.chart-card { grid-area: chart; }
+.guide { grid-area: guide; }
+@media (max-width: 1000px) { .work { grid-template-columns: minmax(0, 1fr); grid-template-areas: "q" "stage" "code" "io" "chart" "guide"; } .editor-card { align-self: start; } }
+/* the question's pond functions sit in columns so the question stays short */
+@media (min-width: 1001px) { .qcard .tools { grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); column-gap: 24px; } }
 @media (max-width: 520px) { .app { padding: 16px 12px 40px; } .transport { flex-wrap: wrap; } #scrub { order: 9; flex-basis: 100%; } }
-.editor-card { padding: 14px; display: grid; gap: 10px; }
+.editor-card { padding: 14px; display: grid; gap: 10px; grid-template-rows: auto minmax(240px, 1fr) auto; }
 .toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .btn { border: 2px solid var(--ink); background: var(--card); border-radius: 10px; box-shadow: 3px 3px 0 var(--ink); padding: 7px 14px; font-weight: 700; font-size: 15px; display: inline-flex; align-items: center; gap: 8px; }
 .btn:hover:not(:disabled) { background: var(--paper-2); }
@@ -102,7 +109,7 @@ pre.code-block { margin: 0; padding: 12px 14px; background: var(--dark); color: 
 .spacer { flex: 1; }
 .load-note { font-size: 13.5px; color: var(--muted); }
 
-.editor { position: relative; display: grid; grid-template-columns: auto minmax(0, 1fr); height: 260px; background: var(--dark); border: 2px solid var(--ink); border-radius: 12px; overflow: hidden; }
+.editor { position: relative; display: grid; grid-template-columns: auto minmax(0, 1fr); height: auto; min-height: 240px; background: var(--dark); border: 2px solid var(--ink); border-radius: 12px; overflow: hidden; }
 .gutter { position: relative; overflow: hidden; background: var(--dark-2); border-right: 1px solid var(--dark-line); min-width: 48px; user-select: none; }
 .gutter-inner { padding: 12px 0; will-change: transform; }
 .gutter .ln { position: relative; height: 21px; padding: 0 10px 0 16px; font: 13px/21px var(--font-mono); color: #4a665e; text-align: right; }
@@ -252,18 +259,24 @@ dialog.dlg::backdrop { background: rgba(31, 42, 54, .5); }
   </header>
 
   <main class="work">
-    <div class="side">
-      <section class="card qcard" aria-label="Question"><div class="question" id="brief" aria-live="polite"></div></section>
-      <details class="card guide">
-        <summary>Function guide</summary>
-        <div>
-          <dl class="fns" id="fns"></dl>
-          <div class="keys">Safe: 3 or below. Fish die above 8. The motor catches fire at 100°C.<br>Editor: Tab indents, Shift+Tab un-indents, Ctrl+/ comments lines, Ctrl+Enter runs. Space plays or pauses the replay, → steps.</div>
+    <section class="card qcard" aria-label="Question"><div class="question" id="brief" aria-live="polite"></div></section>
+      <section class="card editor-card" aria-label="Your code">
+        <div class="toolbar">
+          <button class="btn primary" id="runBtn" disabled><span class="spin"></span>Loading Python…</button>
+          <span class="load-note" id="loadNote">First load takes about 15 seconds.</span>
+          <span class="spacer"></span>
+          <button class="btn" id="resetBtn" title="Put the starter code back (Ctrl+Z undoes it)">Reset code</button>
         </div>
-      </details>
-    </div>
-
-    <div class="main">
+        <div class="editor">
+          <div class="gutter" aria-hidden="true"><div class="gutter-inner" id="gutter"></div></div>
+          <div class="code-area">
+            <div class="band-layer" id="bandLayer"><div class="exec-band" id="execBand"></div></div>
+            <div class="code-layer" id="codeLayer"><pre class="hl" id="hl" aria-hidden="true"></pre></div>
+            <textarea id="code" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" wrap="off" aria-label="Your Python code"></textarea>
+          </div>
+        </div>
+        <div class="now" id="now"><span class="pulse"></span><span class="lnum" id="nowLine"></span><span class="txt" id="nowText">Press Run and this shows which line is running.</span><span class="stale" id="nowStale" hidden>code changed since this run</span></div>
+      </section>
       <section class="card stage" aria-label="Pond simulation">
         <div class="scene-box"><canvas id="scene" width="1000" height="440" aria-label="Animation of the ponds, the aerator motor and its temperature"></canvas>
           <div class="welldone" id="wellDone" hidden role="dialog" aria-labelledby="wdBig">
@@ -288,23 +301,7 @@ dialog.dlg::backdrop { background: rgba(31, 42, 54, .5); }
           <div class="verdict"><span class="tag" id="resultTag">Ready</span><p id="resultText">Press Run to try your code.</p><button class="btn primary" id="nextBtn" hidden>Next question →</button></div>
         </div>
       </section>
-
-      <section class="card editor-card" aria-label="Your code">
-        <div class="toolbar">
-          <button class="btn primary" id="runBtn" disabled><span class="spin"></span>Loading Python…</button>
-          <span class="load-note" id="loadNote">First load takes about 15 seconds.</span>
-          <span class="spacer"></span>
-          <button class="btn" id="resetBtn" title="Put the starter code back (Ctrl+Z undoes it)">Reset code</button>
-        </div>
-        <div class="editor">
-          <div class="gutter" aria-hidden="true"><div class="gutter-inner" id="gutter"></div></div>
-          <div class="code-area">
-            <div class="band-layer" id="bandLayer"><div class="exec-band" id="execBand"></div></div>
-            <div class="code-layer" id="codeLayer"><pre class="hl" id="hl" aria-hidden="true"></pre></div>
-            <textarea id="code" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" wrap="off" aria-label="Your Python code"></textarea>
-          </div>
-        </div>
-        <div class="now" id="now"><span class="pulse"></span><span class="lnum" id="nowLine"></span><span class="txt" id="nowText">Press Run and this shows which line is running.</span><span class="stale" id="nowStale" hidden>code changed since this run</span></div>
+      <section class="card io-card" aria-label="Output and variables">
         <div class="io">
           <div class="pane">
             <div class="log-head"><b>Output</b><label class="switch"><input type="checkbox" id="callsToggle" checked aria-label="Show every function call"> every call</label></div>
@@ -320,11 +317,16 @@ dialog.dlg::backdrop { background: rgba(31, 42, 54, .5); }
           </div>
         </div>
       </section>
-
       <section class="card chart-card" id="chartCard" aria-label="Chart">
         <canvas id="chart" width="1000" height="190" aria-label="Chart of your pollution readings and the motor temperature over time. Click to jump to a moment."></canvas>
       </section>
-    </div>
+    <details class="card guide">
+      <summary>Function guide</summary>
+      <div>
+        <dl class="fns" id="fns"></dl>
+        <div class="keys">Safe: 3 or below. Fish die above 8. The motor catches fire at 100°C.<br>Editor: Tab indents, Shift+Tab un-indents, Ctrl+/ comments lines, Ctrl+Enter runs. Space plays or pauses the replay, → steps.</div>
+      </div>
+    </details>
   </main>
 </div>
 
@@ -1264,7 +1266,7 @@ const FX = { parts: [], smoke: [], bub: { 1: [], 2: [] }, pops: [], emit: { 1: 0
   fireAt: null, sprayAt: null, frozenAt: null, winAt: null, errAt: null, labels: {}, pings: [], banner: null, intro: null };
 function resetFxState() {
   FX.deathAt = {}; FX.deathPos = {}; FX.toxicAt = {}; FX.splashed = {};
-  FX.fireAt = FX.sprayAt = FX.frozenAt = FX.winAt = FX.errAt = null; FX.banner = null;
+  FX.fireAt = FX.sprayAt = FX.frozenAt = FX.winAt = FX.errAt = null; FX.banner = null; FX.say = null;
 }
 function resetFx() {
   resetFxState();
@@ -1316,6 +1318,7 @@ function anchorFor(e) { return e.fn === "pollution" ? "p" + e.args : ANCHOR[e.fn
 function enterSeg(s) {
   if (!s || s.i < 0) return;
   const e = PB.data.log[s.i];
+  if (e.k === "print") { FX.say = { e, born: frameNow }; return; }
   if (e.k !== "call") return;
   const anchor = anchorFor(e);
   if (!anchor) return;
@@ -1834,6 +1837,60 @@ function drawHud(c, f) {
     c.restore(); c.textAlign = "left"; c.textBaseline = "alphabetic";
   }
 }
+// the pond keeper stands in the corner once the code has printed something, and says what it printed
+function lastPrintIndex() {
+  if (!PB.data) return -1;
+  const log = PB.data.log;
+  for (let i = Math.min(PB.shown, log.length - 1); i >= 0; i--) if (log[i].k === "print") return i;
+  return -1;
+}
+function wrapText(c, text, maxW) {
+  const words = String(text).split(" "), lines = [];
+  let line = "";
+  for (const w of words) {
+    const t = line ? line + " " + w : w;
+    if (c.measureText(t).width > maxW && line) { lines.push(line); line = w; } else line = t;
+  }
+  if (line) lines.push(line);
+  if (lines.length > 3) { lines.length = 3; lines[2] += "…"; }
+  return lines;
+}
+function drawKeeper(c, now) {
+  const li = lastPrintIndex();
+  if (li < 0) return;
+  const seg = PB.segs[PB.seg], cur = seg && seg.i >= 0 ? PB.data.log[seg.i] : null;
+  const say = FX.say && now - FX.say.born < 2600 ? FX.say : cur && cur.k === "print" && !PB.playing ? { e: cur, born: now - 400 } : null;
+  const age = say ? (now - say.born) / 1000 : 9;
+  const x = 46, y = H - 4 + (reduceMotion ? 0 : Math.max(0, 1 - age / .2) * 6), talk = say && !reduceMotion && Math.floor(age * 8) % 2 === 0;
+  // wellies, coat, head, cap
+  c.save(); c.translate(x, y); c.scale(1.25, 1.25); c.translate(-x, -y);
+  c.lineJoin = "round";
+  rr(c, x - 15, y - 16, 12, 16, 3); c.fillStyle = "#2f8a4c"; c.fill(); inkLine(c, 2.5);
+  rr(c, x + 3, y - 16, 12, 16, 3); c.fillStyle = "#2f8a4c"; c.fill(); inkLine(c, 2.5);
+  printed(c, () => rr(c, x - 18, y - 56, 36, 44, 12), SUN, 2.5);
+  printed(c, () => blob(c, x, y - 70, 15, 15, 120, .03), "#f3c49c", 2.5);
+  c.beginPath(); c.moveTo(x - 16, y - 74); c.quadraticCurveTo(x, y - 96, x + 16, y - 74); c.lineTo(x + 24, y - 74); c.closePath();
+  c.fillStyle = "#3f7fd0"; c.fill(); inkLine(c, 2.5);
+  c.fillStyle = INK; ell(c, x + 5, y - 70, 1.8, 1.8); c.fill();
+  if (talk) { ell(c, x + 9, y - 62, 3, 2.4); c.fill(); }
+  else { c.beginPath(); c.moveTo(x + 5, y - 62); c.lineTo(x + 11, y - 62); inkLine(c, 2); }
+  c.restore();
+  if (!say) return;
+  // the speech bubble
+  c.font = "700 21px 'Atkinson Hyperlegible', sans-serif";
+  const lines = wrapText(c, say.e.text === "" ? "…" : say.e.text, 340);
+  const w = Math.max(...lines.map((l) => c.measureText(l).width)) + 28, h = lines.length * 26 + 18;
+  const bx = x + 30, by = y - 128 - h, pop = reduceMotion ? 1 : Math.min(1, .6 + age * 4);
+  c.save(); c.translate(bx, by + h); c.scale(pop, pop); c.translate(-bx, -(by + h));
+  c.fillStyle = INK; rr(c, bx + 3, by + 3, w, h, 12); c.fill();
+  c.beginPath(); c.moveTo(bx + 14, by + h - 2); c.lineTo(bx + 2, by + h + 18); c.lineTo(bx + 34, by + h - 2); c.closePath();
+  c.fillStyle = CREAM; c.fill(); inkLine(c, 2.5);
+  rr(c, bx, by, w, h, 12); c.fill(); inkLine(c, 2.5);
+  c.fillStyle = CREAM; c.fillRect(bx + 15, by + h - 3, 18, 5);
+  c.fillStyle = INK; c.textBaseline = "middle";
+  lines.forEach((l, i) => c.fillText(l, bx + 14, by + 22 + i * 26));
+  c.textBaseline = "alphabetic"; c.restore();
+}
 function drawIntro(c, now, anim) {
   const I = FX.intro;
   if (!I || !I.items.length) return;
@@ -1942,6 +1999,7 @@ function drawScene(f, now, dt) {
   drawPings(c, now, anim);
   drawLabels(c, now, anim);
   if (SHOW.clock) drawHud(c, f);
+  drawKeeper(c, now);
   drawIntro(c, now, anim);
   drawBanner(c, now);
   c.restore();
