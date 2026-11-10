@@ -346,8 +346,8 @@ const $ = (id) => document.getElementById(id);
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const esc = (s) => String(s).replace(/[&<>"]/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[ch]));
 const store = {
-  get(k, d) { try { const v = localStorage.getItem("pondrescue-19." + k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
-  set(k, v) { try { localStorage.setItem("pondrescue-19." + k, JSON.stringify(v)); } catch (e) {} },
+  get(k, d) { try { const v = localStorage.getItem("pondrescue-24." + k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem("pondrescue-24." + k, JSON.stringify(v)); } catch (e) {} },
 };
 function clockText(t) {
   const h = START_CLOCK + Math.floor(t + 1e-6);

@@ -1,6 +1,6 @@
 # Pond Rescue
 
-SOEE2810, week 7 practical. Students learn Python by running a fish farm's aerator: 19 short questions, each one a bit of code they write, run, and watch play out hour by hour, with the line that's running lit up as it goes. The last question is the full challenge.
+SOEE2810, week 7 practical. Students learn Python by running a fish farm's aerator: 24 short questions, each one a bit of code they write, run, and watch play out hour by hour, with the line that's running lit up as it goes. The last question is the full challenge.
 
 **Play it:** https://alexborowiak.github.io/SOEE2810_week07/
 
@@ -18,19 +18,24 @@ Nothing to install. Python runs in the browser with [Pyodide](https://pyodide.or
 | 6 | Switch the motor on if the pond is above 3 (three test mornings, one exactly 3.0) | `if` |
 | 7 | *Starts from 6:* the motor is running; switch it off if the pond is 3 or below | `if`, `<=` |
 | 8 | Print danger, warning or ok | `elif` |
-| 9 | All clear only if both ponds are 3 or below | `and` |
-| 10 | *Starts from 9:* alarm if either pond is above 6 | `or` |
-| 11 | Move the hose to the dirtier pond | comparing values |
-| 12 | Wait for the storm, then switch on | `while` |
-| 13 | *Starts from 12:* keep the motor on until the pond is clean | `while` |
-| 14 | Keep watch through two days of storms | `while True` |
-| 15 | Switch on only if the pond is dirty and the motor is cool | `and` |
-| 16 | *Starts from 14:* stop the motor overheating | nested loops |
-| 17 | Write `report(pond)` | `def` |
-| 18 | Write `clean(pond)` for two ponds | functions and loops |
-| 19 | Pond Rescue: 4 days, 3 storms, a toxic spill. Bonus: fewest motor hours | everything |
+| 9 | Print `pollution(1) > 3`: Python answers True or False | `True`, `False` |
+| 10 | Print whether both ponds are 3 or below (all four combinations) | `and` |
+| 11 | *Starts from 10:* print whether either pond is above 6 | `or` |
+| 12 | All clear only if both ponds are 3 or below | `and` in an `if` |
+| 13 | *Starts from 12:* alarm if either pond is above 6 | `or` in an `if` |
+| 14 | Move the hose to the dirtier pond | comparing values |
+| 15 | Wait for the storm, then switch on | `while` |
+| 16 | *Starts from 15:* keep the motor on until the pond is clean | `while` |
+| 17 | Keep watch through two days of storms | `while True` |
+| 18 | Print whether the pond is dirty and the motor is cool | `and` with the motor |
+| 19 | *Starts from 18:* switch on only if the pond is dirty and the motor is cool | `and` in an `if` |
+| 20 | Print whether either pond is dirty and the motor is cool | `or` and `and` together, brackets |
+| 21 | *Starts from 17:* stop the motor overheating | nested loops |
+| 22 | Write `report(pond)` | `def` |
+| 23 | Write `clean(pond)` for two ponds | functions and loops |
+| 24 | Pond Rescue: 4 days, 3 storms, a toxic spill. Bonus: fewest motor hours | everything |
 
-Each question says what to achieve, not how: the starter code is blank, or, where a question builds on the one before, it starts with that question's answer (with a button to load the student's own code instead), and the pond functions it needs are listed with it as short bullets (`pollution(x)` reads pollution of pond x, `wait(x)` waits x hours: any whole number, so students can try `wait(1)` or `wait(5)` and see what happens), because calling those isn't the Python skill. Each question is checked automatically, some against more than one test case so hard-coding doesn't pass, with a specific message for each classic mistake: the motor catches fire, a pond is left too early, the hose is moved with the motor running (the farmer gets soaked), a loop has no `wait()` (time stops), or a typo (with "Did you mean...?"). The `and`/`or` questions explain each result in True/False terms, e.g. "pond 1 <= 3 is False, pond 2 <= 3 is True. False and True gives False".
+Each question says what to achieve, not how: the starter code is blank, or, where a question builds on the one before, it starts with that question's answer (with a button to load the student's own code instead), and the pond functions it needs are listed with it as short bullets (`pollution(x)` reads pollution of pond x, `wait(x)` waits x hours: any whole number, so students can try `wait(1)` or `wait(5)` and see what happens), because calling those isn't the Python skill. Each question is checked automatically, some against more than one test case so hard-coding doesn't pass, with a specific message for each classic mistake: the motor catches fire, a pond is left too early, the hose is moved with the motor running (the farmer gets soaked), a loop has no `wait()` (time stops), or a typo (with "Did you mean...?"). Questions 9 to 13 and 18 to 20 practise True and False on their own before using them in an `if`: the code just prints a condition, and every combination is tested. They explain each result in True/False terms, e.g. "pond 1 <= 3 is False, pond 2 <= 3 is True. False and True gives False".
 
 The animation builds up with the questions: question 1 is just a pond and its sensor, and the clock, storm drain, aerator, second pond, movable hose and thermometer each appear when a question first needs them, with a "NEW" sticker.
 
@@ -79,4 +84,4 @@ On GitHub: **Settings → Pages → Build and deployment → Source: Deploy from
 ## Notes
 
 - The page respects the "reduce motion" setting: calmer animation and no shaking or confetti. To force the full animation, for example on a projector PC with that setting on, add `?motion=full` to the address.
-- Progress lives in each browser's local storage (under `pondrescue-19.`; saved work started afresh when the question numbers last moved), so it doesn't follow a student between PCs. Their code is easy to copy out of the editor if they want to keep it.
+- Progress lives in each browser's local storage (under `pondrescue-24.`; saved work started afresh when the question numbers last moved), so it doesn't follow a student between PCs. Their code is easy to copy out of the editor if they want to keep it.

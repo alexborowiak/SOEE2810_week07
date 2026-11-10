@@ -29,7 +29,7 @@ DECAY = 0.03          # natural clean-up per hour (fraction)
 BASE_INFLOW = 0.045   # background pollution per hour
 START_CLOCK = 8       # every run starts at 08:00 on day 1
 
-# ---------------- the final challenge (question 19) ----------------
+# ---------------- the final challenge (question 24) ----------------
 # Tuned so the model answer only just survives (peak pollution about 7.7).
 HOURS = 96            # 4 days
 START_POLLUTION = {1: 1.5, 2: 1.5}
@@ -775,6 +775,57 @@ def goal_alarm(sim, sc, ns, called):
     return True, f"{why}: {want}."
 
 
+def _truth_goal(explain):
+    """A question whose code prints a True/False condition. explain(sc) gives (the right answer, why)."""
+    def goal(sim, sc, ns, called):
+        want, why = explain(sc)
+        said = {w for line in sim.printed for w in re.findall(r"\b(True|False)\b", line)}
+        if not said:
+            return False, f"Print the condition itself, inside print( ), and Python prints True or False. ({why}.)"
+        if said != {str(want)}:
+            return False, f"{why}, but your code printed {' and '.join(sorted(said))}."
+        return True, f"{why}."
+    return goal
+
+
+def _tf_one(sc):
+    p = sc.start[1]
+    return p > SAFE, f"Pond 1 was {p}, so pollution(1) > 3 is {p > SAFE}"
+
+
+def _tf_both(sc):
+    a, b = sc.start[1] <= SAFE, sc.start[2] <= SAFE
+    return a and b, (f"Pond 1 was {sc.start[1]}, so pollution(1) <= 3 is {a}. Pond 2 was {sc.start[2]}, so "
+                     f"pollution(2) <= 3 is {b}. {a} and {b} is {a and b}")
+
+
+def _tf_either(sc):
+    a, b = sc.start[1] > 6, sc.start[2] > 6
+    return a or b, (f"Pond 1 was {sc.start[1]}, so pollution(1) > 6 is {a}. Pond 2 was {sc.start[2]}, so "
+                    f"pollution(2) > 6 is {b}. {a} or {b} is {a or b}")
+
+
+def _tf_motor(sc):
+    p, temp = sc.start[1], round(sc.temp)
+    a, b = p > SAFE, temp < 50
+    return a and b, (f"Pond 1 was {p}, so pollution(1) > 3 is {a}. The motor was {temp}°C, so motor_temp() < 50 "
+                     f"is {b}. {a} and {b} is {a and b}")
+
+
+def _tf_any(sc):
+    a, b, cool = sc.start[1] > SAFE, sc.start[2] > SAFE, round(sc.temp) < 50
+    return (a or b) and cool, (f"pollution(1) > 3 is {a} and pollution(2) > 3 is {b}, so the bracket ({a} or {b}) "
+                               f"is {a or b}. The motor was {round(sc.temp)}°C, so motor_temp() < 50 is {cool}. "
+                               f"{a or b} and {cool} is {(a or b) and cool}")
+
+
+goal_tf_one = _truth_goal(_tf_one)
+goal_tf_both = _truth_goal(_tf_both)
+goal_tf_either = _truth_goal(_tf_either)
+goal_truth = _truth_goal(_tf_motor)
+goal_tf_any = _truth_goal(_tf_any)
+
+
 def goal_cool_enough(sim, sc, ns, called):
     p, temp = sc.start[1], round(sc.temp)
     dirty, cool = p > SAFE, temp < 50
@@ -1026,10 +1077,58 @@ LEVELS = [
         "goal": goal_label,
     },
     {
-        "id": 9, "title": "Both clean?", "topic": "and",
+        "id": 9, "title": "True or False?", "topic": "True and False",
         "uses": ["pollution"], "axis": 3,
-        "task": ("Print **all clear** if pond 1 **and** pond 2 are both 3 or below. If either of them isn't, print "
-                 "**check ponds**."),
+        "task": ("A comparison is a question Python answers with **True** or **False**. Print whether pond 1 is "
+                 "dirtier than 3: no `if`, just print the comparison. Tested on three mornings."),
+        "starter": BLANK,
+        "hint": "Try `print(5 > 3)` first: it prints True. Now put `pollution(1)` where the 5 is.",
+        "answer": "print(pollution(1) > 3)\n",
+        "cases": [
+            Scenario("Dirty", hours=3, ponds=1, start={1: 5.0}, after_code=0),
+            Scenario("Clean", hours=3, ponds=1, start={1: 2.0}, after_code=0),
+            Scenario("Exactly 3", hours=3, ponds=1, start={1: 3.0}, after_code=0),
+        ],
+        "goal": goal_tf_one,
+    },
+    {
+        "id": 10, "title": "Both clean?", "topic": "and",
+        "uses": ["pollution"], "axis": 3,
+        "task": ("Print whether pond 1 **and** pond 2 are both 3 or below: True or False. `and` is only True when "
+                 "both sides are True. Tested on four mornings."),
+        "starter": BLANK,
+        "hint": ("Two comparisons joined by `and`, each one complete: `pollution(1) <= 3 and pollution(2) <= 3`. "
+                 "Put the whole thing inside `print( )`."),
+        "answer": "print(pollution(1) <= 3 and pollution(2) <= 3)\n",
+        "cases": [
+            Scenario("Both clean", hours=3, ponds=2, start={1: 2.1, 2: 2.8}, after_code=0),
+            Scenario("Pond 2 dirty", hours=3, ponds=2, start={1: 2.1, 2: 4.6}, after_code=0),
+            Scenario("Pond 1 dirty", hours=3, ponds=2, start={1: 4.6, 2: 2.1}, after_code=0),
+            Scenario("Both dirty", hours=3, ponds=2, start={1: 4.6, 2: 5.2}, after_code=0),
+        ],
+        "goal": goal_tf_both,
+    },
+    {
+        "id": 11, "title": "Either too high?", "topic": "or",
+        "uses": ["pollution"], "axis": 3,
+        "task": ("Your `and` code is in the editor. Change it to print whether pond 1 **or** pond 2 is above 6. "
+                 "`or` is True when at least one side is True. Tested on four mornings."),
+        "starter": None,
+        "hint": "Swap `and` for `or`, and change both comparisons to `> 6`.",
+        "answer": "print(pollution(1) > 6 or pollution(2) > 6)\n",
+        "cases": [
+            Scenario("Pond 1 high", hours=3, ponds=2, start={1: 6.8, 2: 2.0}, after_code=0),
+            Scenario("Pond 2 high", hours=3, ponds=2, start={1: 2.0, 2: 6.8}, after_code=0),
+            Scenario("Both high", hours=3, ponds=2, start={1: 7.1, 2: 6.8}, after_code=0),
+            Scenario("Both below 6", hours=3, ponds=2, start={1: 4.0, 2: 5.0}, after_code=0),
+        ],
+        "goal": goal_tf_either,
+    },
+    {
+        "id": 12, "title": "All clear?", "topic": "and in an if",
+        "uses": ["pollution"], "axis": 3,
+        "task": ("Now use `and` in an `if`. Print **all clear** if pond 1 and pond 2 are both 3 or below. If either "
+                 "of them isn't, print **check ponds**."),
         "starter": BLANK,
         "hint": ("`and` is True only when the conditions on both sides are True. Each side needs its own "
                  "comparison: `one <= 3 and two <= 3`, not `one and two <= 3`."),
@@ -1050,7 +1149,7 @@ LEVELS = [
         "goal": goal_both_clean,
     },
     {
-        "id": 10, "title": "Raise the alarm", "topic": "or",
+        "id": 13, "title": "Raise the alarm", "topic": "or",
         "uses": ["pollution"], "axis": 3,
         "task": ("Your all-clear code is in the editor. Change it to print **alarm** if pond 1 **or** pond 2 is above 6, "
                  "and **fine** if neither is."),
@@ -1074,7 +1173,7 @@ LEVELS = [
         "goal": goal_alarm,
     },
     {
-        "id": 11, "title": "Which pond?", "topic": "comparing values",
+        "id": 14, "title": "Which pond?", "topic": "comparing values",
         "uses": ["pollution", "switch_to", "motor_on"], "axis": 9,
         "task": "Two ponds, one air hose. Clean **whichever pond is dirtier**.",
         "starter": BLANK,
@@ -1096,7 +1195,7 @@ LEVELS = [
         "goal": goal_dirtier,
     },
     {
-        "id": 12, "title": "Wait for the storm", "topic": "while loops",
+        "id": 15, "title": "Wait for the storm", "topic": "while loops",
         "uses": ["pollution", "wait", "motor_on"], "axis": 24,
         "task": ("A storm is on its way, but nobody knows when. Switch the motor on **as soon as** pond 1 gets "
                  "dirtier than 3, and not before."),
@@ -1115,7 +1214,7 @@ LEVELS = [
         "goal": goal_wait_storm,
     },
     {
-        "id": 13, "title": "Stop when it's clean", "topic": "while loops",
+        "id": 16, "title": "Stop when it's clean", "topic": "while loops",
         "uses": ["pollution", "wait", "motor_on", "motor_off"], "axis": 6,
         "task": ("Your storm code is in the editor. Now turn it round: run the motor on pond 1 until the pond is 3 or "
                  "below, then **switch it off** straight away. Sometimes the pond is clean already."),
@@ -1136,7 +1235,7 @@ LEVELS = [
         "goal": goal_stop_clean,
     },
     {
-        "id": 14, "title": "Keep watch", "topic": "while True",
+        "id": 17, "title": "Keep watch", "topic": "while True",
         "uses": ["pollution", "motor_on", "motor_off", "wait"],
         "task": ("Two days of storms. Every 3 hours, check pond 1: motor on if it's dirtier than 3, off if it isn't. "
                  "**Keep the fish alive.**"),
@@ -1159,12 +1258,29 @@ LEVELS = [
         "goal": goal_survive,
     },
     {
-        "id": 15, "title": "Cool enough?", "topic": "and",
-        "uses": ["pollution", "motor_temp", "motor_on"], "axis": 3,
-        "task": ("The motor is sometimes still hot from earlier, and it catches fire at 100°C. Switch it on only if "
-                 "pond 1 is dirtier than 3 **and** the motor is below 50°C."),
+        "id": 18, "title": "Cool motor?", "topic": "True, False and and",
+        "uses": ["pollution", "motor_temp"], "axis": 3,
+        "task": ("No `if` yet. **Print** whether pond 1 is dirtier than 3 **and** the motor is below 50°C, and Python "
+                 "answers **True** or **False**. Tested on four mornings."),
         "starter": BLANK,
-        "hint": "Two conditions joined with `and`, each a full comparison: `if ... > 3 and ... < 50:`",
+        "hint": ("A comparison is a question with a True/False answer: `print(5 > 3)` prints True. `and` joins two of "
+                 "them, and is True only when both are True."),
+        "answer": "print(pollution(1) > 3 and motor_temp() < 50)\n",
+        "cases": [
+            Scenario("Dirty, cool motor", hours=3, ponds=1, start={1: 5.0}, temp=30, after_code=0),
+            Scenario("Dirty, hot motor", hours=3, ponds=1, start={1: 5.0}, temp=75, after_code=0),
+            Scenario("Clean, cool motor", hours=3, ponds=1, start={1: 2.0}, temp=30, after_code=0),
+            Scenario("Clean, hot motor", hours=3, ponds=1, start={1: 2.0}, temp=75, after_code=0),
+        ],
+        "goal": goal_truth,
+    },
+    {
+        "id": 19, "title": "Cool enough?", "topic": "and",
+        "uses": ["pollution", "motor_temp", "motor_on"], "axis": 3,
+        "task": ("Your True/False code is in the editor. Now act on it: switch the motor on only if pond 1 is dirtier "
+                 "than 3 **and** the motor is below 50°C. (It catches fire at 100°C.)"),
+        "starter": None,
+        "hint": "Put the condition after `if` instead of inside `print( )`, and switch the motor on underneath.",
         "answer": (
             "if pollution(1) > 3 and motor_temp() < 50:\n"
             "    motor_on()\n"
@@ -1178,8 +1294,25 @@ LEVELS = [
         "goal": goal_cool_enough,
     },
     {
-        "id": 16, "title": "Too hot", "topic": "nested ifs and loops",
-        "uses": ["pollution", "motor_temp", "motor_on", "motor_off", "wait"], "carry": 14,
+        "id": 20, "title": "Any pond need it?", "topic": "or and and together",
+        "uses": ["pollution", "motor_temp"], "axis": 3,
+        "task": ("Two ponds, one motor. Print whether the motor should run: True if pond 1 **or** pond 2 is dirtier "
+                 "than 3, **and** the motor is below 50°C. Tested on four mornings."),
+        "starter": BLANK,
+        "hint": ("Work out the `or` part first by putting it in brackets: `(... > 3 or ... > 3) and ... < 50`. "
+                 "Without the brackets, Python does the `and` first."),
+        "answer": "print((pollution(1) > 3 or pollution(2) > 3) and motor_temp() < 50)\n",
+        "cases": [
+            Scenario("Pond 1 dirty, cool motor", hours=3, ponds=2, start={1: 5.0, 2: 2.0}, temp=30, after_code=0),
+            Scenario("Pond 2 dirty, cool motor", hours=3, ponds=2, start={1: 2.0, 2: 5.0}, temp=30, after_code=0),
+            Scenario("Both clean, cool motor", hours=3, ponds=2, start={1: 2.0, 2: 2.5}, temp=30, after_code=0),
+            Scenario("Pond 1 dirty, hot motor", hours=3, ponds=2, start={1: 5.0, 2: 2.0}, temp=75, after_code=0),
+        ],
+        "goal": goal_tf_any,
+    },
+    {
+        "id": 21, "title": "Too hot", "topic": "nested ifs and loops",
+        "uses": ["pollution", "motor_temp", "motor_on", "motor_off", "wait"], "carry": 17,
         "task": ("A long storm. Run this code and watch the motor: it heats up 15°C an hour while running and catches "
                  "fire at 100°C. **Change it** so the motor rests and cools down whenever it gets hot."),
         "starter": (
@@ -1211,7 +1344,7 @@ LEVELS = [
         "goal": goal_survive,
     },
     {
-        "id": 17, "title": "Your own function", "topic": "def",
+        "id": 22, "title": "Your own function", "topic": "def",
         "uses": ["pollution"], "axis": 3,
         "task": ("Write a function called `report` that takes a pond number and prints that pond's pollution. "
                  "Then use it for **both ponds**."),
@@ -1228,13 +1361,13 @@ LEVELS = [
         "goal": goal_report,
     },
     {
-        "id": 18, "title": "Two ponds", "topic": "functions and loops",
+        "id": 23, "title": "Two ponds", "topic": "functions and loops",
         "uses": ["pollution", "motor_temp", "motor_on", "motor_off", "switch_to", "wait"],
         "task": ("Look after both ponds for two days. Write a function `clean(pond)` that cleans one pond until it's "
                  "safe, without overheating the motor, and use it for both ponds over and over."),
         "starter": BLANK,
-        "hint": ("Inside `clean`: move the hose there, then a `while` loop like question 13 with your cool-down from "
-                 "question 16. Switch the motor off at the end: the hose can only move when it's off."),
+        "hint": ("Inside `clean`: move the hose there, then a `while` loop like question 16 with your cool-down from "
+                 "question 21. Switch the motor off at the end: the hose can only move when it's off."),
         "answer": (
             "def clean(pond):\n"
             "    switch_to(pond)\n"
@@ -1258,14 +1391,14 @@ LEVELS = [
         "goal": goal_function,
     },
     {
-        "id": 19, "title": "Pond Rescue", "topic": "the full challenge",
-        "uses": ["pollution", "motor_temp", "motor_on", "motor_off", "switch_to", "wait"], "carry": 18,
+        "id": 24, "title": "Pond Rescue", "topic": "the full challenge",
+        "uses": ["pollution", "motor_temp", "motor_on", "motor_off", "switch_to", "wait"], "carry": 23,
         "bonus": True,
         "task": ("Four days, two ponds, three storms, and on day 3 a barrel of chemicals falls into pond 1 and keeps "
                  "leaking. Keep every fish alive without setting the motor on fire. **Bonus:** use the motor for as "
                  "few hours as you can."),
         "starter": BLANK,
-        "hint": ("Your question 18 code is a good start. If a pond dies, look at the chart: was the motor cooling "
+        "hint": ("Your question 23 code is a good start. If a pond dies, look at the chart: was the motor cooling "
                  "down, or busy at the other pond? The toxic leak keeps going, so don't leave pond 1 too early."),
         "answer": (
             "while True:\n"
