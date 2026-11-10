@@ -303,7 +303,7 @@ dialog.dlg::backdrop { background: rgba(31, 42, 54, .5); }
       </section>
 
       <section class="card chart-card" id="chartCard" aria-label="Chart">
-        <canvas id="chart" width="1000" height="190" aria-label="Chart of pollution and motor temperature over time. Click to jump to a moment."></canvas>
+        <canvas id="chart" width="1000" height="190" aria-label="Chart of your pollution readings and the motor temperature over time. Click to jump to a moment."></canvas>
       </section>
     </div>
   </main>
@@ -1935,6 +1935,15 @@ function chartGeom() {
   const hours = runHours();
   return { hours, x: (t) => CL + (t / hours) * (CR - CL), y: (v) => CB - (Math.min(v, 12) / 12) * (CB - CT), yT: (v) => CB - (Math.min(v, 110) / 110) * (CB - CT) };
 }
+// every reading of pond p's sensor up to log entry upto, one per hour (the first that hour)
+function readingsUpTo(p, upto) {
+  const out = [], log = PB.data.log;
+  for (let i = 0; i <= upto && i < log.length; i++) {
+    const e = log[i];
+    if (e.k === "call" && e.fn === "pollution" && Number(e.args) === p && (!out.length || out[out.length - 1].t !== e.t)) out.push(e);
+  }
+  return out;
+}
 function drawChart(f) {
   fitCanvas(chartCv, cctx, CW, CH);
   const c = cctx, G = chartGeom(), { x, y, yT, hours } = G;
@@ -1963,10 +1972,11 @@ function drawChart(f) {
   c.font = "700 12px 'Atkinson Hyperlegible', sans-serif";
   c.fillStyle = "#2c8248"; c.fillText("safe", CR + 6, y(SAFE) + 4);
   c.fillStyle = "#bf3a2b"; c.fillText("fish die", CR + 6, y(DEADLY) + 4);
-  const showMotor = SHOW.motor, showTemp = SHOW.therm;
+  // the motor's temperature is always known; pollution only where the code read the sensor
+  const showMotor = SHOW.motor, showTemp = SHOW.motor;
   if (showTemp) { c.fillStyle = "#b86e0c"; c.font = "12px 'Atkinson Hyperlegible', sans-serif"; c.fillText("100°C", CR + 6, yT(100) + 4); c.fillText("50°C", CR + 6, yT(50) + 4); }
   const legend = [];
-  for (let p = 1; p <= ponds; p++) legend.push([ponds > 1 ? "Pond " + p : "Pollution", POND_COL[p], false]);
+  for (let p = 1; p <= ponds; p++) legend.push([(ponds > 1 ? "Pond " + p + " readings" : "Pollution readings"), POND_COL[p], false]);
   if (showTemp) legend.push(["Motor °C", "#d38a17", true]);
   if (showMotor) legend.push(["motor running", "rgba(27,138,154,.6)", "bar"]);
   if (showMotor && ponds > 1) legend.push(["moving hose", "rgba(255,170,40,.6)", "bar"]);
@@ -1995,29 +2005,20 @@ function drawChart(f) {
       i = j + 1;
     }
   }
-  const series = [];
-  for (let p = 1; p <= ponds; p++) series.push(["p" + p, POND_COL[p], y, false]);
-  if (showTemp) series.push(["temp", "#d38a17", yT, true]);
-  for (const [key, col, ys, dash] of series) {
-    const pts = [];
-    for (let i = 0; i <= last; i++) pts.push([x(i), ys(fr[i][key])]);
-    const v = key === "temp" ? f.temp : f[key];
-    pts.push([x(upto), ys(v)]);
-    if (!dash) {
-      c.fillStyle = col === POND_COL[1] ? "rgba(27,138,154,.1)" : "rgba(200,69,122,.1)";
-      c.beginPath(); c.moveTo(pts[0][0], CB); for (const [px, py] of pts) c.lineTo(px, py); c.lineTo(pts[pts.length - 1][0], CB); c.closePath(); c.fill();
-    }
-    c.strokeStyle = col; c.lineWidth = dash ? 1.8 : 2.6; c.setLineDash(dash ? [3, 3] : []); c.lineJoin = "round";
-    c.beginPath(); pts.forEach(([px, py], i) => (i ? c.lineTo(px, py) : c.moveTo(px, py))); c.stroke(); c.setLineDash([]);
-    c.fillStyle = col; ell(c, x(upto), ys(v), 3.5, 3.5); c.fill();
+  // motor temperature: always known
+  if (showTemp) {
+    c.strokeStyle = "#d38a17"; c.lineWidth = 1.8; c.setLineDash([3, 3]); c.lineJoin = "round";
+    c.beginPath(); for (let i = 0; i <= last; i++) (i ? c.lineTo(x(i), yT(fr[i].temp)) : c.moveTo(x(i), yT(fr[i].temp)));
+    c.lineTo(x(upto), yT(f.temp)); c.stroke(); c.setLineDash([]);
+    c.fillStyle = "#d38a17"; ell(c, x(upto), yT(f.temp), 3.5, 3.5); c.fill();
   }
-  // sensor readings: what your code actually saw
-  const shown = PB.shown;
-  for (let i = 0; i <= shown && i < PB.data.log.length; i++) {
-    const e = PB.data.log[i];
-    if (e.fn !== "pollution") continue;
-    c.fillStyle = "#fff"; c.strokeStyle = POND_COL[e.args] || "#14302a"; c.lineWidth = 2;
-    ell(c, x(e.t), y(e.ret), 3.6, 3.6); c.fill(); c.stroke();
+  // pollution: only the readings your code took, joined up
+  for (let p = 1; p <= ponds; p++) {
+    const pts = readingsUpTo(p, PB.shown).map((e) => [x(e.t), y(e.ret)]);
+    if (!pts.length) continue;
+    c.strokeStyle = POND_COL[p]; c.lineWidth = 2.6; c.lineJoin = "round";
+    c.beginPath(); pts.forEach(([px, py], i) => (i ? c.lineTo(px, py) : c.moveTo(px, py))); c.stroke();
+    for (const [px, py] of pts) { c.fillStyle = "#fff"; c.strokeStyle = POND_COL[p]; c.lineWidth = 2.2; ell(c, px, py, 4.2, 4.2); c.fill(); c.stroke(); }
   }
   for (const e of PB.data.events) {
     if (e.t > upto + 1e-6) continue;
@@ -2041,7 +2042,10 @@ function drawChart(f) {
     const t = Math.floor(hoverT), a = fr[clamp(t, 0, fr.length - 1)];
     c.strokeStyle = "rgba(20,48,42,.25)"; c.setLineDash([2, 3]); c.beginPath(); c.moveTo(x(hoverT), CT); c.lineTo(x(hoverT), CB); c.stroke(); c.setLineDash([]);
     const lines = [clockText(t)];
-    for (let p = 1; p <= ponds; p++) lines.push((ponds > 1 ? "Pond " + p : "Pollution") + ": " + a["p" + p].toFixed(1) + (a["dead" + p] ? " (dead)" : ""));
+    for (let p = 1; p <= ponds; p++) {
+      const r = readingsUpTo(p, PB.shown).filter((e) => e.t <= hoverT + 1e-6).pop();
+      lines.push((ponds > 1 ? "Pond " + p + " reading" : "Last reading") + ": " + (r ? Number(r.ret).toFixed(1) + " at " + shortClock(r.t) : "none yet") + (a["dead" + p] ? " (fish dead)" : ""));
+    }
     if (showMotor) lines.push("Motor: " + (showTemp ? Math.round(a.temp) + "°C, " : "") + (a.fire ? "on fire" : a.switching ? "moving hose" : a.motor ? "on" : "off"));
     c.font = "12.5px 'Atkinson Hyperlegible', sans-serif";
     const w = Math.max(...lines.map((s) => c.measureText(s).width)) + 18, h = lines.length * 16 + 10;
@@ -2085,7 +2089,7 @@ function frame(ts) {
 selectLevel(level.id);
 requestAnimationFrame(frame);
 if (window.__POND_FORCE_MAIN) fallbackToMain(); else startWorker();
-window.__pond = { PB, LEVELS, startRun, selectLevel, step, seek, skip, play, pause, tauForTime, FX, draw: (ts) => drawScene(frameAt(PB.data ? PB.simT : 0), ts, 0), get SHOW() { return SHOW; }, get level() { return level; } };
+window.__pond = { PB, LEVELS, startRun, selectLevel, step, seek, skip, play, pause, tauForTime, FX, draw: (ts) => { const f = frameAt(PB.data ? PB.simT : 0); drawScene(f, ts, 0); if (SHOW.chart) drawChart(f); }, get SHOW() { return SHOW; }, get level() { return level; } };
 })();
 </script>
 </body>

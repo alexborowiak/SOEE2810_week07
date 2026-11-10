@@ -40,9 +40,9 @@ After Run, the page replays the run:
 - The line that's running is highlighted in the editor: blue for a quick call, amber while `wait()` or `switch_to()` lets time pass.
 - The variables panel, beside the output, shows every variable's value at that moment and highlights what just changed (e.g. `i = 2`, was 1), including a function's own variables while it runs. Step (→) goes one line at a time.
 - Each call pops up beside what it touches in the animation, e.g. `pollution(1) → 4.2` at the pond's sensor.
-- The reading card above each pond shows only what the code has measured: "?" until `pollution()` is called, then the last reading. When the sensor is read, its light flashes and the reading travels up to the card. (The water colour and the chart still show the real pollution.)
+- The reading card above each pond shows only what the code has measured: "?" until `pollution()` is called, then the last reading. When the sensor is read, its light flashes and the reading travels up to the card. The chart works the same way: its pollution line joins up only the readings the code took, while the motor's temperature is always shown. (The water colour still hints at the real pollution.)
 - The output log lists every print and every function call, with the pond time and line number. Click a line to jump there.
-- Pause, step one line at a time (→), scrub, change speed, or click the chart to jump to a moment. The chart marks the readings the code actually took, so students can compare them with the real pollution line.
+- Pause, step one line at a time (→), scrub, change speed, or click the chart to jump to a moment. The chart shows the readings the code took.
 
 ## Answers
 
