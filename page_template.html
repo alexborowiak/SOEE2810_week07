@@ -1760,33 +1760,39 @@ function drawMeter(c, p, f, now) {
 // where a call's label goes, and which way it points: [x, y, "above" | "below" | "right"]
 function anchorPos(a, anim) {
   const m = LAY.motor;
-  if (a[0] === "p") { const b = buoyPos(Number(a[1]), anim); return [b.x, b.y - 44, "above"]; }
+  if (a[0] === "p") { const b = buoyPos(Number(a[1]), anim); return [b.x, b.y - 42, "above"]; }
   if (m && a === "therm") return [m.x + m.w + 28, m.y - 66, "above"];
   if (m && a === "motor") return [m.x + m.w / 2 - 8, m.y - 12, "above"];
   if (m && a === "hose") return [m.x + m.w / 2, m.y + m.h + 54, "below"];
   return [214, 31, "right"];
 }
 function labelParts(e) {
-  const parts = [[e.fn, "#7fe3ff"], ["(" + e.args + ")", CREAM]];
-  if (e.ret !== undefined) parts.push([" → " + retText(e), SUN]);
-  if (e.note) parts.push(["  " + e.note, "#c9c1b0"]);
+  const parts = [[e.fn, "#3b2a8a"], ["(" + e.args + ")", INK]];
+  if (e.ret !== undefined) parts.push([" → ", INK], [retText(e), INK]);
+  if (e.note) parts.push(["  " + e.note, "#5a5170"]);
   return parts;
 }
 function drawLabel(c, x, y, parts, alpha, mode) {
   c.save(); c.globalAlpha = alpha;
-  c.font = "600 13px 'JetBrains Mono', monospace";
-  let w = 16; for (const [t] of parts) w += c.measureText(t).width;
-  const h = 25;
-  let bx = clamp(x - w / 2, 6, W - w - 6), by = mode === "below" ? y + 7 : y - h - 6;
-  if (mode === "right") { bx = x + 8; by = y - h / 2; }
-  c.fillStyle = INK; rr(c, bx, by, w, h, 7); c.fill();
+  c.font = "700 17px 'JetBrains Mono', monospace";
+  let w = 22; for (const [t] of parts) w += c.measureText(t).width;
+  const h = 34;
+  let bx = clamp(x - w / 2, 6, W - w - 8), by = mode === "below" ? y + 10 : y - h - 10;
+  if (mode === "right") { bx = x + 12; by = y - h / 2; }
+  c.fillStyle = INK; rr(c, bx + 3, by + 3, w, h, 9); c.fill();
+  // the pointer, then the box over it, then cover the line where they meet
   c.beginPath();
-  if (mode === "below") { c.moveTo(x - 5, by); c.lineTo(x + 5, by); c.lineTo(x, by - 6); }
-  else if (mode === "right") { c.moveTo(bx, y - 5); c.lineTo(bx, y + 5); c.lineTo(bx - 6, y); }
-  else { c.moveTo(x - 5, by + h); c.lineTo(x + 5, by + h); c.lineTo(x, by + h + 6); }
-  c.fill();
-  let tx = bx + 8; c.textBaseline = "middle";
-  for (const [t, col] of parts) { c.fillStyle = col; c.fillText(t, tx, by + h / 2 + .5); tx += c.measureText(t).width; }
+  if (mode === "below") { c.moveTo(x - 8, by + 1); c.lineTo(x, by - 9); c.lineTo(x + 8, by + 1); }
+  else if (mode === "right") { c.moveTo(bx + 1, y - 8); c.lineTo(bx - 9, y); c.lineTo(bx + 1, y + 8); }
+  else { c.moveTo(x - 8, by + h - 1); c.lineTo(x, by + h + 9); c.lineTo(x + 8, by + h - 1); }
+  c.fillStyle = NOTE; c.fill(); inkLine(c, 2.5);
+  rr(c, bx, by, w, h, 9); c.fillStyle = NOTE; c.fill(); inkLine(c, 2.5);
+  c.fillStyle = NOTE;
+  if (mode === "below") c.fillRect(x - 6.5, by - 1.5, 13, 4);
+  else if (mode === "right") c.fillRect(bx - 1.5, y - 6.5, 4, 13);
+  else c.fillRect(x - 6.5, by + h - 2.5, 13, 4);
+  let tx = bx + 11; c.textBaseline = "middle";
+  for (const [t, col] of parts) { c.fillStyle = col; c.fillText(t, tx, by + h / 2 + 1); tx += c.measureText(t).width; }
   c.textBaseline = "alphabetic"; c.restore();
 }
 function drawLabels(c, now, anim) {
@@ -1886,9 +1892,9 @@ function drawKeeper(c, now) {
   c.save(); c.translate(bx, by + h); c.scale(pop, pop); c.translate(-bx, -(by + h));
   c.fillStyle = INK; rr(c, bx + 3, by + 3, w, h, 12); c.fill();
   c.beginPath(); c.moveTo(bx + 14, by + h - 2); c.lineTo(bx + 2, by + h + 18); c.lineTo(bx + 34, by + h - 2); c.closePath();
-  c.fillStyle = CREAM; c.fill(); inkLine(c, 2.5);
+  c.fillStyle = NOTE; c.fill(); inkLine(c, 2.5);
   rr(c, bx, by, w, h, 12); c.fill(); inkLine(c, 2.5);
-  c.fillStyle = CREAM; c.fillRect(bx + 15, by + h - 3, 18, 5);
+  c.fillStyle = NOTE; c.fillRect(bx + 15, by + h - 3, 18, 5);
   c.fillStyle = INK; c.textBaseline = "middle";
   lines.forEach((l, i) => c.fillText(l, bx + 14, by + 22 + i * 26));
   c.textBaseline = "alphabetic"; c.restore();
