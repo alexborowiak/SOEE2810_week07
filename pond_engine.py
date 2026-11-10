@@ -29,7 +29,7 @@ DECAY = 0.03          # natural clean-up per hour (fraction)
 BASE_INFLOW = 0.045   # background pollution per hour
 START_CLOCK = 8       # every run starts at 08:00 on day 1
 
-# ---------------- the final challenge (question 14) ----------------
+# ---------------- the final challenge (question 17) ----------------
 # Tuned so the model answer only just survives (peak pollution about 7.7).
 HOURS = 96            # 4 days
 START_POLLUTION = {1: 1.5, 2: 1.5}
@@ -57,7 +57,7 @@ class Scenario:
     """One test case: how long it runs, how many ponds, and what pours into them."""
 
     def __init__(self, name="", hours=HOURS, ponds=2, start=None, spills=None, toxic=(),
-                 base=BASE_INFLOW, after_code=None):
+                 base=BASE_INFLOW, after_code=None, temp=START_TEMP):
         self.name = name
         self.hours = hours
         self.ponds = tuple(range(1, ponds + 1))
@@ -67,6 +67,7 @@ class Scenario:
         self.base = dict(base) if isinstance(base, dict) else {p: base for p in self.ponds}
         # hours the ponds carry on once the student's code has finished (None: to the end)
         self.after_code = after_code
+        self.temp = temp   # the motor's temperature at the start
 
     def sewage(self, pond, t):
         total = self.base[pond]
@@ -142,7 +143,7 @@ class Sim:
         self.sc = sc
         self.t = 0
         self.P = {p: float(sc.start[p]) for p in sc.ponds}
-        self.temp = START_TEMP
+        self.temp = sc.temp
         self.motor = False
         self.target = 1
         self.motor_dead = False
@@ -700,6 +701,52 @@ def goal_label(sim, sc, ns, called):
     return True, f"Pollution was {start}: {want}."
 
 
+def _said(sim, phrases):
+    text = " ".join(sim.printed).lower()
+    return {p for p in phrases if p in text}
+
+
+def goal_both_clean(sim, sc, ns, called):
+    a, b = sc.start[1], sc.start[2]
+    want = "all clear" if a <= SAFE and b <= SAFE else "check ponds"
+    why = (f"Pond 1 is {a}, so pond 1 <= 3 is {a <= SAFE}. Pond 2 is {b}, so pond 2 <= 3 is {b <= SAFE}. "
+           f"{a <= SAFE} and {b <= SAFE} gives {a <= SAFE and b <= SAFE}")
+    said = _said(sim, ["all clear", "check ponds"])
+    if not said:
+        return False, f"Print all clear or check ponds. ({why}.)"
+    if said != {want}:
+        return False, (f"{why}, so it should say {want}, but your code printed {' and '.join(sorted(said))}. "
+                       "Each side of and needs its own comparison.")
+    return True, f"{why}: {want}."
+
+
+def goal_alarm(sim, sc, ns, called):
+    a, b = sc.start[1], sc.start[2]
+    want = "alarm" if a > 6 or b > 6 else "fine"
+    why = (f"Pond 1 is {a}, so pond 1 > 6 is {a > 6}. Pond 2 is {b}, so pond 2 > 6 is {b > 6}. "
+           f"{a > 6} or {b > 6} gives {a > 6 or b > 6}")
+    said = _said(sim, ["alarm", "fine"])
+    if not said:
+        return False, f"Print alarm or fine. ({why}.)"
+    if said != {want}:
+        return False, (f"{why}, so it should say {want}, but your code printed {' and '.join(sorted(said))}. "
+                       "or is True when either side is True; and needs both.")
+    return True, f"{why}: {want}."
+
+
+def goal_cool_enough(sim, sc, ns, called):
+    p, temp = sc.start[1], round(sc.temp)
+    dirty, cool = p > SAFE, temp < 50
+    want = dirty and cool
+    why = (f"Pond 1 was {p}, so dirtier than 3 is {dirty}. The motor was {temp}°C, so below 50 is {cool}. "
+           f"{dirty} and {cool} gives {want}")
+    if want and not sim.ever_on:
+        return False, f"{why}, so the motor should have gone on."
+    if not want and sim.ever_on:
+        return False, f"{why}, so the motor should have stayed off."
+    return True, f"{why}, so the motor {'went on' if want else 'stayed off'}."
+
+
 def goal_dirtier(sim, sc, ns, called):
     dirty = max(sc.ponds, key=lambda p: sc.start[p])
     clean = min(sc.ponds, key=lambda p: sc.start[p])
@@ -897,7 +944,54 @@ LEVELS = [
         "goal": goal_label,
     },
     {
-        "id": 7, "title": "Which pond?", "topic": "comparing values",
+        "id": 7, "title": "Both clean?", "topic": "and",
+        "uses": ["pollution"], "axis": 3,
+        "task": ("Print **all clear** if pond 1 **and** pond 2 are both 3 or below. If either of them isn't, print "
+                 "**check ponds**."),
+        "starter": BLANK,
+        "hint": ("`and` is True only when the conditions on both sides are True. Each side needs its own "
+                 "comparison: `one <= 3 and two <= 3`, not `one and two <= 3`."),
+        "answer": (
+            "one = pollution(1)\n"
+            "two = pollution(2)\n"
+            "\n"
+            "if one <= 3 and two <= 3:\n"
+            '    print("all clear")\n'
+            "else:\n"
+            '    print("check ponds")\n'
+        ),
+        "cases": [
+            Scenario("Both clean", hours=3, ponds=2, start={1: 2.1, 2: 2.8}, after_code=0),
+            Scenario("Pond 2 dirty", hours=3, ponds=2, start={1: 2.1, 2: 4.6}, after_code=0),
+            Scenario("Pond 1 dirty", hours=3, ponds=2, start={1: 4.6, 2: 2.1}, after_code=0),
+        ],
+        "goal": goal_both_clean,
+    },
+    {
+        "id": 8, "title": "Raise the alarm", "topic": "or",
+        "uses": ["pollution"], "axis": 3,
+        "task": "Print **alarm** if pond 1 **or** pond 2 is above 6. If neither is, print **fine**.",
+        "starter": BLANK,
+        "hint": ("`or` is True when at least one side is True. Like `and`, each side needs its own comparison: "
+                 "`one > 6 or two > 6`."),
+        "answer": (
+            "one = pollution(1)\n"
+            "two = pollution(2)\n"
+            "\n"
+            "if one > 6 or two > 6:\n"
+            '    print("alarm")\n'
+            "else:\n"
+            '    print("fine")\n'
+        ),
+        "cases": [
+            Scenario("Pond 1 high", hours=3, ponds=2, start={1: 6.8, 2: 2.0}, after_code=0),
+            Scenario("Pond 2 high", hours=3, ponds=2, start={1: 2.0, 2: 6.8}, after_code=0),
+            Scenario("Both below 6", hours=3, ponds=2, start={1: 4.0, 2: 5.0}, after_code=0),
+        ],
+        "goal": goal_alarm,
+    },
+    {
+        "id": 9, "title": "Which pond?", "topic": "comparing values",
         "uses": ["pollution", "switch_to", "motor_on"], "axis": 9,
         "task": "Two ponds, one air hose. Clean **whichever pond is dirtier**.",
         "starter": BLANK,
@@ -919,7 +1013,7 @@ LEVELS = [
         "goal": goal_dirtier,
     },
     {
-        "id": 8, "title": "Wait for the storm", "topic": "while loops",
+        "id": 10, "title": "Wait for the storm", "topic": "while loops",
         "uses": ["pollution", "wait", "motor_on"], "axis": 24,
         "task": ("A storm is on its way, but nobody knows when. Switch the motor on **as soon as** pond 1 gets "
                  "dirtier than 3, and not before."),
@@ -938,7 +1032,7 @@ LEVELS = [
         "goal": goal_wait_storm,
     },
     {
-        "id": 9, "title": "Stop when it's clean", "topic": "while loops",
+        "id": 11, "title": "Stop when it's clean", "topic": "while loops",
         "uses": ["pollution", "wait", "motor_on", "motor_off"], "axis": 6,
         "task": ("Run the motor on pond 1 until the pond is 3 or below, then **switch it off** straight away. "
                  "Sometimes the pond is clean already."),
@@ -959,7 +1053,7 @@ LEVELS = [
         "goal": goal_stop_clean,
     },
     {
-        "id": 10, "title": "Keep watch", "topic": "while True",
+        "id": 12, "title": "Keep watch", "topic": "while True",
         "uses": ["pollution", "motor_on", "motor_off", "wait"],
         "task": ("Two days of storms. Every 3 hours, check pond 1: motor on if it's dirtier than 3, off if it isn't. "
                  "**Keep the fish alive.**"),
@@ -982,8 +1076,27 @@ LEVELS = [
         "goal": goal_survive,
     },
     {
-        "id": 11, "title": "Too hot", "topic": "nested ifs and loops",
-        "uses": ["pollution", "motor_temp", "motor_on", "motor_off", "wait"], "carry": True,
+        "id": 13, "title": "Cool enough?", "topic": "and",
+        "uses": ["pollution", "motor_temp", "motor_on"], "axis": 3,
+        "task": ("The motor is sometimes still hot from earlier, and it catches fire at 100°C. Switch it on only if "
+                 "pond 1 is dirtier than 3 **and** the motor is below 50°C."),
+        "starter": BLANK,
+        "hint": "Two conditions joined with `and`, each a full comparison: `if ... > 3 and ... < 50:`",
+        "answer": (
+            "if pollution(1) > 3 and motor_temp() < 50:\n"
+            "    motor_on()\n"
+        ),
+        "cases": [
+            Scenario("Dirty, cool motor", hours=6, ponds=1, start={1: 5.0}, temp=30, after_code=3),
+            Scenario("Dirty, hot motor", hours=6, ponds=1, start={1: 5.0}, temp=75, after_code=3),
+            Scenario("Clean, cool motor", hours=6, ponds=1, start={1: 2.0}, temp=30, after_code=3),
+        ],
+        "advice": {"fire": "The motor was already hot, so it should have stayed off. With and, both sides have to be True."},
+        "goal": goal_cool_enough,
+    },
+    {
+        "id": 14, "title": "Too hot", "topic": "nested ifs and loops",
+        "uses": ["pollution", "motor_temp", "motor_on", "motor_off", "wait"], "carry": 12,
         "task": ("A long storm. Run this code and watch the motor: it heats up 15°C an hour while running and catches "
                  "fire at 100°C. **Change it** so the motor rests and cools down whenever it gets hot."),
         "starter": (
@@ -1015,7 +1128,7 @@ LEVELS = [
         "goal": goal_survive,
     },
     {
-        "id": 12, "title": "Your own function", "topic": "def",
+        "id": 15, "title": "Your own function", "topic": "def",
         "uses": ["pollution"], "axis": 3,
         "task": ("Write a function called `report` that takes a pond number and prints that pond's pollution. "
                  "Then use it for **both ponds**."),
@@ -1032,13 +1145,13 @@ LEVELS = [
         "goal": goal_report,
     },
     {
-        "id": 13, "title": "Two ponds", "topic": "functions and loops",
+        "id": 16, "title": "Two ponds", "topic": "functions and loops",
         "uses": ["pollution", "motor_temp", "motor_on", "motor_off", "switch_to", "wait"],
         "task": ("Look after both ponds for two days. Write a function `clean(pond)` that cleans one pond until it's "
                  "safe, without overheating the motor, and use it for both ponds over and over."),
         "starter": BLANK,
-        "hint": ("Inside `clean`: move the hose there, then a `while` loop like question 9 with your cool-down from "
-                 "question 11. Switch the motor off at the end: the hose can only move when it's off."),
+        "hint": ("Inside `clean`: move the hose there, then a `while` loop like question 11 with your cool-down from "
+                 "question 14. Switch the motor off at the end: the hose can only move when it's off."),
         "answer": (
             "def clean(pond):\n"
             "    switch_to(pond)\n"
@@ -1062,14 +1175,14 @@ LEVELS = [
         "goal": goal_function,
     },
     {
-        "id": 14, "title": "Pond Rescue", "topic": "the full challenge",
-        "uses": ["pollution", "motor_temp", "motor_on", "motor_off", "switch_to", "wait"], "carry": True,
+        "id": 17, "title": "Pond Rescue", "topic": "the full challenge",
+        "uses": ["pollution", "motor_temp", "motor_on", "motor_off", "switch_to", "wait"], "carry": 16,
         "bonus": True,
         "task": ("Four days, two ponds, three storms, and on day 3 a barrel of chemicals falls into pond 1 and keeps "
                  "leaking. Keep every fish alive without setting the motor on fire. **Bonus:** use the motor for as "
                  "few hours as you can."),
         "starter": BLANK,
-        "hint": ("Your question 13 code is a good start. If a pond dies, look at the chart: was the motor cooling "
+        "hint": ("Your question 16 code is a good start. If a pond dies, look at the chart: was the motor cooling "
                  "down, or busy at the other pond? The toxic leak keeps going, so don't leave pond 1 too early."),
         "answer": (
             "while True:\n"
@@ -1100,7 +1213,8 @@ def level_for_page(lv):
     return {
         "id": lv["id"], "title": lv["title"], "topic": lv["topic"], "uses": lv["uses"], "task": lv["task"],
         "starter": lv["starter"], "hint": lv["hint"], "answer": lv["answer"],
-        "carry": lv.get("carry", False), "bonus": lv.get("bonus", False),
+        "carry": lv.get("carry"), "bonus": lv.get("bonus", False),
+        "storm": any(sc.toxic or any(sc.spills.values()) for sc in lv["cases"]),
         "tests": [sc.name for sc in lv["cases"]] if len(lv["cases"]) > 1 else [],
         "ponds": len(first.ponds), "hours": first.hours, "axis": lv.get("axis"), "preview": Sim(first).frames[0],
     }

@@ -1,6 +1,6 @@
 # Pond Rescue
 
-SOEE2810, week 7 practical. Students learn Python by running a fish farm's aerator: 14 short questions, each one a bit of code they write, run, and watch play out hour by hour, with the line that's running lit up as it goes. The last question is the full challenge.
+SOEE2810, week 7 practical. Students learn Python by running a fish farm's aerator: 17 short questions, each one a bit of code they write, run, and watch play out hour by hour, with the line that's running lit up as it goes. The last question is the full challenge.
 
 **Play it:** https://alexborowiak.github.io/SOEE2810_week07/
 
@@ -16,16 +16,21 @@ Nothing to install. Python runs in the browser with [Pyodide](https://pyodide.or
 | 4 | Highest and average of a day's readings | lists, `max`, `sum`, `len` |
 | 5 | Switch the motor on if the pond is above 3 (three test mornings, one exactly 3.0) | `if` |
 | 6 | Print danger, warning or ok | `elif` |
-| 7 | Move the hose to the dirtier pond | comparing values |
-| 8 | Wait for the storm, then switch on | `while` |
-| 9 | Keep the motor on until the pond is clean | `while` |
-| 10 | Keep watch through two days of storms | `while True` |
-| 11 | Stop the motor overheating | nested loops |
-| 12 | Write `report(pond)` | `def` |
-| 13 | Write `clean(pond)` for two ponds | functions and loops |
-| 14 | Pond Rescue: 4 days, 3 storms, a toxic spill. Bonus: fewest motor hours | everything |
+| 7 | All clear only if both ponds are 3 or below | `and` |
+| 8 | Alarm if either pond is above 6 | `or` |
+| 9 | Move the hose to the dirtier pond | comparing values |
+| 10 | Wait for the storm, then switch on | `while` |
+| 11 | Keep the motor on until the pond is clean | `while` |
+| 12 | Keep watch through two days of storms | `while True` |
+| 13 | Switch on only if the pond is dirty and the motor is cool | `and` |
+| 14 | Stop the motor overheating | nested loops |
+| 15 | Write `report(pond)` | `def` |
+| 16 | Write `clean(pond)` for two ponds | functions and loops |
+| 17 | Pond Rescue: 4 days, 3 storms, a toxic spill. Bonus: fewest motor hours | everything |
 
-Each question says what to achieve, not how: the starter code is blank (except question 11, where fixing the given code is the point), and the pond functions it needs (`pollution()`, `wait()` and so on) are listed with it, because calling those isn't the Python skill. Each question is checked automatically, some against more than one test case so hard-coding doesn't pass, with a specific message for each classic mistake: the motor catches fire, a pond is left too early, the hose is moved with the motor running (the farmer gets soaked), a loop has no `wait()` (time stops), or a typo (with "Did you mean...?").
+Each question says what to achieve, not how: the starter code is blank (except question 14, where fixing the given code is the point), and the pond functions it needs (`pollution()`, `wait()` and so on) are listed with it, because calling those isn't the Python skill. Each question is checked automatically, some against more than one test case so hard-coding doesn't pass, with a specific message for each classic mistake: the motor catches fire, a pond is left too early, the hose is moved with the motor running (the farmer gets soaked), a loop has no `wait()` (time stops), or a typo (with "Did you mean...?"). The `and`/`or` questions explain each result in True/False terms, e.g. "pond 1 <= 3 is False, pond 2 <= 3 is True. False and True gives False".
+
+The animation builds up with the questions: question 1 is just a pond and its sensor, and the clock, storm drain, aerator, second pond, movable hose and thermometer each appear when a question first needs them, with a "NEW" sticker.
 
 ## Seeing what the code does
 
@@ -70,4 +75,4 @@ On GitHub: **Settings → Pages → Build and deployment → Source: Deploy from
 ## Notes
 
 - The page respects the "reduce motion" setting: calmer animation and no shaking or confetti. To force the full animation, for example on a projector PC with that setting on, add `?motion=full` to the address.
-- Progress lives in each browser's local storage, so it doesn't follow a student between PCs. Their code is easy to copy out of the editor if they want to keep it.
+- Progress lives in each browser's local storage (under `pondrescue-17.`; the 17-question version started saved work afresh, because the question numbers moved), so it doesn't follow a student between PCs. Their code is easy to copy out of the editor if they want to keep it.
