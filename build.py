@@ -10,4 +10,5 @@ levels = json.dumps([pond_engine.level_for_page(lv) for lv in pond_engine.LEVELS
 html = open("page_template.html", encoding="utf-8").read()
 html = html.replace("%%LEVELS%%", levels).replace("%%ENGINE%%", eng)
 open("index.html", "w", encoding="utf-8", newline="\n").write(html)
-print(f"wrote index.html ({len(pond_engine.LEVELS)} questions)")
+n_demo = sum(1 for lv in pond_engine.LEVELS if lv.get("demo"))
+print(f"wrote index.html ({len(pond_engine.LEVELS) - n_demo} questions, {n_demo} examples)")

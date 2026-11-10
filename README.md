@@ -39,6 +39,12 @@ Each question says what to achieve, not how: the starter code is blank, or, wher
 
 The animation builds up with the questions: question 1 is just a pond and its sensor, and the clock, storm drain, aerator, second pond, movable hose and thermometer each appear when a question first needs them, with a "NEW" sticker.
 
+## Examples
+
+Ten worked examples sit between the questions (the ▶ buttons in the question bar), each just before the question that first needs it: the sensor and the clock, a loop, a list, the aerator, `if`, True and False, moving the hose, a `while` loop, the motor's temperature, and a function of your own. Each is ready-made code with a comment on every step; students press Run and watch, and there's nothing to pass.
+
+Passing a question brings up a "Well done!" card over the pond with a button to the next one.
+
 ## Seeing what the code does
 
 After Run, the page replays the run:

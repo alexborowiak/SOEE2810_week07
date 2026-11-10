@@ -1424,6 +1424,142 @@ for _i, _lv in enumerate(LEVELS):
     if _lv["starter"] is None:
         _lv["starter"] = LEVELS[_i - 1]["answer"]
         _lv.setdefault("carry", LEVELS[_i - 1]["id"])
+
+# ---------------- worked examples ----------------
+# Shown before the question they lead into: ready-made code with comments. Students press Run and watch;
+# there's nothing to pass. They introduce each pond function and each new bit of Python.
+def goal_demo(sim, sc, ns, called):
+    return True, "That's the example. Look back through the output and the variables, then try the next question."
+
+
+def _demo(n, title, uses, task, code, case):
+    return {"id": 100 + n, "demo": True, "title": title, "topic": "example", "uses": uses, "task": task,
+            "starter": code, "hint": "", "answer": code, "cases": [case], "goal": goal_demo}
+
+
+DEMOS = [   # (question number, the example shown just before it), in order
+    (1, _demo(1, "The sensor and the clock", ["pollution", "wait"],
+             "Press **Run** and watch the sensor in the pond. Each line has a comment (after the #) saying what it does.",
+             "# pollution(1) checks the pollution in pond 1\n"
+             "pollution(1)\n"
+             "\n"
+             "# wait(3) lets three hours pass\n"
+             "wait(3)\n"
+             "\n"
+             "# so we can check the pollution again, three hours later\n"
+             "pollution(1)\n",
+             Scenario("", hours=6, ponds=1, start={1: 2.0}, base=0.3, after_code=0))),
+    (3, _demo(2, "A loop", ["pollution", "wait"],
+             "Press **Run** and watch `i` in the Variables panel as the loop goes round.",
+             "# a for loop repeats the indented lines underneath it\n"
+             "# range(3) counts 0, 1, 2, and i is the count each time round\n"
+             "for i in range(3):\n"
+             "    print(\"Time round the loop:\", i)\n"
+             "    pollution(1)\n"
+             "    wait(3)\n"
+             "\n"
+             "# this line isn't indented, so it runs once, after the loop\n"
+             "print(\"Finished\")\n",
+             Scenario("", hours=12, ponds=1, start={1: 2.0}, base=0.3, after_code=0))),
+    (4, _demo(3, "A list", ["pollution"],
+             "Press **Run** and watch the list grow in the Variables panel.",
+             "# [] is an empty list\n"
+             "numbers = []\n"
+             "\n"
+             "# append adds something to the end of the list\n"
+             "numbers.append(2.5)\n"
+             "numbers.append(3.1)\n"
+             "numbers.append(pollution(1))\n"
+             "print(numbers)\n"
+             "\n"
+             "# max, sum and len all work on a list\n"
+             "print(max(numbers))\n"
+             "print(sum(numbers))\n"
+             "print(len(numbers))\n",
+             Scenario("", hours=3, ponds=1, start={1: 2.2}, after_code=0))),
+    (6, _demo(4, "The aerator", ["motor_on", "motor_off", "wait"],
+             "Meet the aerator. Press **Run** and watch the bubbles and the pond's colour.",
+             "# motor_on() starts the aerator. It pumps air into the pond and cleans it\n"
+             "motor_on()\n"
+             "wait(3)\n"
+             "\n"
+             "# motor_off() stops it again\n"
+             "motor_off()\n"
+             "wait(3)\n",
+             Scenario("", hours=6, ponds=1, start={1: 5.5}, after_code=0))),
+    (6, _demo(5, "if", ["pollution"],
+               "Press **Run**, then change the 3 to a 5 and run it again. What changes?",
+               "# the indented line only runs if the condition is True\n"
+               "if pollution(1) > 3:\n"
+               "    print(\"Pond 1 is dirty\")\n"
+               "\n"
+               "# this line isn't indented, so it always runs\n"
+               "print(\"Checked\")\n",
+               Scenario("", hours=3, ponds=1, start={1: 4.2}, after_code=0))),
+    (9, _demo(6, "True and False", [],
+             "Press **Run**. Each line prints Python's answer: True or False.",
+             "# a comparison is a question Python answers with True or False\n"
+             "print(5 > 3)\n"
+             "print(2 > 3)\n"
+             "\n"
+             "# and is True only if both sides are True\n"
+             "print(5 > 3 and 2 > 3)\n"
+             "\n"
+             "# or is True if either side is True\n"
+             "print(5 > 3 or 2 > 3)\n",
+             Scenario("", hours=3, ponds=1, start={1: 2.0}, after_code=0))),
+    (14, _demo(7, "Moving the hose", ["switch_to", "motor_on", "motor_off", "wait"],
+              "One aerator, two ponds. Press **Run** and watch the hose.",
+              "# switch_to(2) moves the air hose to pond 2. It takes 3 hours\n"
+              "switch_to(2)\n"
+              "\n"
+              "# now the aerator cleans pond 2\n"
+              "motor_on()\n"
+              "wait(3)\n"
+              "\n"
+              "# switch the motor off before moving the hose again!\n"
+              "motor_off()\n",
+              Scenario("", hours=9, ponds=2, start={1: 2.0, 2: 5.5}, after_code=0))),
+    (15, _demo(8, "A while loop", ["wait"],
+              "Press **Run** and watch `hours` in the Variables panel.",
+              "# a while loop keeps repeating as long as its condition is True\n"
+              "hours = 0\n"
+              "while hours < 9:\n"
+              "    wait(3)\n"
+              "    hours = hours + 3\n"
+              "    print(hours, \"hours have passed\")\n"
+              "\n"
+              "# once hours < 9 is False, the loop stops and this runs\n"
+              "print(\"Done\")\n",
+              Scenario("", hours=12, ponds=1, start={1: 2.0}, base=0.2, after_code=0))),
+    (18, _demo(9, "The motor's temperature", ["motor_temp", "motor_on", "motor_off", "wait"],
+              "Press **Run** and watch the thermometer.",
+              "# motor_temp() reads the motor's temperature in °C\n"
+              "print(motor_temp())\n"
+              "\n"
+              "# it heats up while the motor runs...\n"
+              "motor_on()\n"
+              "wait(3)\n"
+              "print(motor_temp())\n"
+              "\n"
+              "# ...and cools down when it's off. At 100°C it catches fire\n"
+              "motor_off()\n"
+              "wait(3)\n"
+              "print(motor_temp())\n",
+              Scenario("", hours=6, ponds=1, start={1: 4.0}, after_code=0))),
+    (22, _demo(10, "Your own function", ["pollution"],
+              "Press **Run** and watch `pond` in the Variables panel each time the function runs.",
+              "# def makes a function of your own. pond is whatever number you give it\n"
+              "def check(pond):\n"
+              "    print(\"Pond\", pond, \"is at\", pollution(pond))\n"
+              "\n"
+              "# now use it, as many times as you like\n"
+              "check(1)\n"
+              "check(2)\n",
+              Scenario("", hours=3, ponds=2, start={1: 4.2, 2: 1.9}, after_code=0))),
+]
+for _q, _d in DEMOS:
+    LEVELS.insert(next(i for i, lv in enumerate(LEVELS) if lv["id"] == _q), _d)
 LEVELS_BY_ID = {lv["id"]: lv for lv in LEVELS}
 FINAL_LEVEL = LEVELS[-1]["id"]
 
@@ -1434,7 +1570,7 @@ def level_for_page(lv):
     return {
         "id": lv["id"], "title": lv["title"], "topic": lv["topic"], "uses": lv["uses"], "task": lv["task"],
         "starter": lv["starter"], "hint": lv["hint"], "answer": lv["answer"],
-        "carry": lv.get("carry"), "bonus": lv.get("bonus", False),
+        "carry": lv.get("carry"), "bonus": lv.get("bonus", False), "demo": lv.get("demo", False),
         "storm": any(sc.toxic or any(sc.spills.values()) for sc in lv["cases"]),
         "tests": [sc.name for sc in lv["cases"]] if len(lv["cases"]) > 1 else [],
         "ponds": len(first.ponds), "hours": first.hours, "axis": lv.get("axis"), "preview": Sim(first).frames[0],

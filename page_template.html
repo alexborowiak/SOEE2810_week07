@@ -54,6 +54,16 @@ h1 small { font-size: 14px; font-weight: 400; color: var(--muted); margin-left: 
 .lv:hover { background: var(--sun); }
 .lv.done { background: var(--ok-bg); }
 .lv.on { background: var(--ink); border-color: var(--ink); color: #fff; }
+.lv.demo { width: 24px; font-size: 10px; border-style: dashed; background: transparent; }
+.lv.demo.done { background: var(--ok-bg); }
+.lv.demo.on { background: var(--ink); color: #fff; border-style: solid; }
+.welldone { position: absolute; inset: 0; display: grid; place-items: center; padding: 16px; background: rgba(31, 42, 54, .28); }
+.wd-card { background: var(--card); border: 2.5px solid var(--ink); border-radius: 16px; box-shadow: 6px 6px 0 var(--ink); padding: 18px 22px; max-width: 440px; text-align: center; display: grid; gap: 10px; transform: rotate(-1deg); animation: wdpop .35s cubic-bezier(.2, 1.6, .4, 1); }
+.wd-big { font: 800 36px/1 var(--font-display); letter-spacing: -.02em; }
+.wd-card p { margin: 0; font-size: 15.5px; }
+.wd-end { font-weight: 700; }
+.wd-actions { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 4px; }
+@keyframes wdpop { from { transform: rotate(-1deg) scale(.6); opacity: 0; } }
 
 /* ---- the question ---- */
 .question { display: grid; gap: 6px; padding: 2px 2px 4px; }
@@ -255,7 +265,16 @@ dialog.dlg::backdrop { background: rgba(31, 42, 54, .5); }
 
     <div class="main">
       <section class="card stage" aria-label="Pond simulation">
-        <div class="scene-box"><canvas id="scene" width="1000" height="440" aria-label="Animation of the ponds, the aerator motor and its temperature"></canvas></div>
+        <div class="scene-box"><canvas id="scene" width="1000" height="440" aria-label="Animation of the ponds, the aerator motor and its temperature"></canvas>
+          <div class="welldone" id="wellDone" hidden role="dialog" aria-labelledby="wdBig">
+            <div class="wd-card">
+              <div class="wd-big" id="wdBig">Well done!</div>
+              <p id="wdText"></p>
+              <p class="wd-end" id="wdEnd" hidden>That's every question. You've rescued the ponds!</p>
+              <div class="wd-actions"><button class="btn primary" id="wdNext">Next question →</button><button class="btn" id="wdStay">Watch it again</button></div>
+            </div>
+          </div>
+        </div>
         <div class="transport">
           <button class="icon-btn main" id="playBtn" disabled aria-label="Play"></button>
           <button class="icon-btn" id="stepBtn" disabled aria-label="Step to the next line" title="Step to the next line (→)"></button>
@@ -540,10 +559,10 @@ const done = new Set(store.get("done", []));
 function codeFor(l) { const c = store.get("code." + l.id, null); return typeof c === "string" ? c : l.starter; }
 function renderLevels() {
   $("levels").innerHTML = LEVELS.map((l) => {
-    const cls = "lv" + (l.id === level.id ? " on" : "") + (done.has(l.id) ? " done" : "");
-    const name = "Question " + l.id + ": " + l.title + (done.has(l.id) ? " (done)" : "");
+    const cls = "lv" + (l.demo ? " demo" : "") + (l.id === level.id ? " on" : "") + (done.has(l.id) ? " done" : "");
+    const name = (l.demo ? "Example: " : "Question " + l.id + ": ") + l.title + (done.has(l.id) ? " (done)" : "");
     return '<button class="' + cls + '" data-id="' + l.id + '" title="' + esc(name) + '" aria-label="' + esc(name) + '"' +
-      (l.id === level.id ? ' aria-current="step"' : "") + ">" + l.id + "</button>";
+      (l.id === level.id ? ' aria-current="step"' : "") + ">" + (l.demo ? "▶" : l.id) + "</button>";
   }).join("");
 }
 $("levels").addEventListener("click", (e) => { const b = e.target.closest(".lv"); if (b) selectLevel(Number(b.dataset.id)); });
@@ -556,16 +575,18 @@ const TOOLS = {
   motor_temp: ["motor_temp()", "reads the motor's temperature (°C)"],
   switch_to: ["switch_to(x)", "moves the air hose to pond x (motor off first)"],
 };
+const NQ = LEVELS.filter((l) => !l.demo).length;   // questions, not counting the examples
+function nextAfter(l) { return LEVELS[LEVELS.indexOf(l) + 1] || null; }
 function renderBrief() {
   const l = level;
   const prev = LEVELS.find((x) => x.id === l.carry);
   const carry = l.carry && prev && typeof store.get("code." + prev.id, null) === "string";
   $("brief").innerHTML =
-    '<div class="qmeta">Question ' + l.id + " of " + LEVELS.length + " · " + esc(l.topic) + "</div>" +
+    '<div class="qmeta">' + (l.demo ? "Example: just press Run and watch" : "Question " + l.id + " of " + NQ + " · " + esc(l.topic)) + "</div>" +
     "<h2>" + esc(l.title) + "</h2>" +
     '<p class="task">' + inline(l.task) + "</p>" +
-    '<ul class="tools">' + l.uses.map((k) => "<li><code>" + TOOLS[k][0] + "</code> " + TOOLS[k][1] + "</li>").join("") + "</ul>" +
-    '<div class="qlinks"><button class="link" id="hintBtn" aria-expanded="false">Hint</button>' +
+    (l.uses.length ? '<ul class="tools">' + l.uses.map((k) => "<li><code>" + TOOLS[k][0] + "</code> " + TOOLS[k][1] + "</li>").join("") + "</ul>" : "") +
+    '<div class="qlinks"' + (l.demo ? " hidden" : "") + '><button class="link" id="hintBtn" aria-expanded="false">Hint</button>' +
     (carry ? '<button class="link" id="carryBtn">Use my question ' + prev.id + " code</button>" : "") +
     '<button class="answer-link" id="answerBtn">' + ICON.lock + "Answer</button></div>" +
     '<p class="hint" id="hint" hidden>' + inline(l.hint) + "</p>";
@@ -588,6 +609,7 @@ function renderGuide() {
 function selectLevel(id, scroll) {
   const l = LEVELS.find((x) => x.id === id);
   if (!l) return;
+  hideWellDone();
   runId++;
   waiting = false; setRunButton();
   clearTimeout(PB.timer);
@@ -717,6 +739,7 @@ function fakeRun(outcome, message) {
 }
 function startRun() {
   if (runBtn.disabled || !pythonReady()) return;
+  hideWellDone();
   const code = ed.ta.value, id = ++runId, lvl = level.id;
   clearTimeout(PB.timer); PB.playing = false;
   ed.errLine = null; edRender();
@@ -872,10 +895,11 @@ function showVerdict(live) {
       if (best === null || r.motor_hours < best) { store.set("best." + level.id, r.motor_hours); if (best !== null) text += " New personal best (was " + best + " hours)!"; }
       else text += " Your best so far: " + best + " hours.";
     }
-    const firstTime = !done.has(level.id);
+    const firstTime = !done.has(level.id), next = nextAfter(level);
     markDone(level.id);
+    if (level.demo) { setResult("win", "Example", r.message, next); return; }
     if (live) spawnWin();
-    const next = LEVELS.find((l) => l.id === level.id + 1);
+    showWellDone(text, next);
     setResult("win", firstTime ? "Done!" : "Passed", text, next);
     return;
   }
@@ -978,8 +1002,20 @@ function setResult(kind, tag, text, next) {
   $("resultText").textContent = text;
   const nb = $("nextBtn");
   nb.hidden = !next;
-  if (next) nb.onclick = () => selectLevel(next.id, true);
+  if (next) { nb.textContent = nextLabel(next); nb.onclick = () => selectLevel(next.id, true); }
 }
+function nextLabel(next) { return next.demo ? "Next: an example →" : "Next question →"; }
+// a "Well done!" card over the pond when a question is passed
+function showWellDone(text, next) {
+  $("wdText").textContent = text;
+  $("wdNext").hidden = !next;
+  $("wdEnd").hidden = !!next;
+  if (next) { $("wdNext").textContent = nextLabel(next); $("wdNext").onclick = () => selectLevel(next.id, true); }
+  $("wellDone").hidden = false;
+  (next ? $("wdNext") : $("wdStay")).focus({ preventScroll: true });
+}
+function hideWellDone() { $("wellDone").hidden = true; }
+$("wdStay").addEventListener("click", () => { hideWellDone(); if (PB.run) { loadCase(0); play(); } });
 
 // ---- output log ----
 const logBox = $("log"), logRows = $("logRows");
@@ -1159,7 +1195,7 @@ function setParts(l, d) {
 }
 // a "NEW" sticker on anything this question adds to the picture
 function introParts(l) {
-  const before = LEVELS.filter((x) => x.id < l.id).map((x) => partsOf(x));
+  const before = LEVELS.slice(0, LEVELS.indexOf(l)).map((x) => partsOf(x));
   if (!before.length) return [];
   const a = { ponds: Math.max(...before.map((s) => s.ponds)) }, b = partsOf(l), out = [];
   for (const k of ["clock", "motor", "therm", "hose2", "pipes"]) a[k] = before.some((s) => s[k]);

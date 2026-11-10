@@ -347,6 +347,11 @@ def main():
             show = lambda x: x if isinstance(x, str) else ",".join(x)
             print(f"{'ok ' if ok else 'BAD'} Q{level_id:<2} {name:16s} {show(got):15s} (want {show(want)}) "
                   f"motor_hours={hours:3d} peak={peak:4.1f}")
+    for lv in E.LEVELS:   # the worked examples must run cleanly
+        if lv.get("demo"):
+            out = json.loads(E.run_level(lv["id"], lv["starter"]))
+            bad += not out["passed"]
+            print(f"{'ok ' if out['passed'] else 'BAD'} example: {lv['title']}  {out['cases'][0]['result']['message'][:60]}")
     sys.exit(1 if bad else 0)
 
 

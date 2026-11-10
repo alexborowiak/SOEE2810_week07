@@ -14,4 +14,5 @@ A one-page classroom coding challenge for SOEE2810 (2nd-year environmental scien
 - Question 24 is tuned so its answer only just survives (peak pollution about 7.7, fish die above 8). Questions with several test cases use them so hard-coded answers fail.
 - The answers the page reveals are the `answer` fields in `LEVELS`; check_scenario.py tests those exact strings.
 - Keep the student-facing function names, the function guide in the page (`FN_INFO`) and the engine in sync.
+- Worked examples (`DEMOS` in pond_engine.py, ids 101 and up, inserted before the question they lead into) have no goal to pass; check_scenario.py only checks they run cleanly.
 - Keep the page simple: one question at a time, short task text, no extra panels. The animation only draws what a question uses (`partsOf()` in the page, from each question's `uses` and `storm`); keep its flat, ink-outlined style and don't add detail. Text is British English and plain: the students are environmental scientists, not programmers.
