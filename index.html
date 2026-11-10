@@ -2742,6 +2742,7 @@ function updateNow(seg, simT) {
 const W = 1000, H = 440;
 const sceneCv = $("scene"), ctx = sceneCv.getContext("2d");
 const INK = "#1f2a36", CREAM = "#fff8ea", SUN = "#ffc93c", CORAL = "#ff6b4a", PINK = "#ff8fb8";
+const NOTE = "#c9b8ff";   // "what's happening" pop-ups: a colour nothing else in the scene uses
 const LAYOUTS = {
   1: { id: 1, ponds: { 1: { cx: 500, cy: 316, rx: 260, ry: 86, fish: 4, pipe: -1, buoy: 0.56 } } },
   "1m": { id: 1, motor: { x: 652, y: 204, w: 124, h: 70 },
@@ -2994,7 +2995,7 @@ function drawPipeLabel(c, p, f) {
   c.font = "700 13px 'Atkinson Hyperlegible', sans-serif";
   const text = "Storm overflow", tw = c.measureText(text).width + 16;
   const x = side < 0 ? Math.max(6, ex - tw - 4) : Math.min(W - tw - 6, ex + 4);
-  card(c, x, y - 44, tw, 22, SUN, 6);
+  card(c, x, y - 44, tw, 22, NOTE, 6);
   c.fillStyle = INK; c.textBaseline = "middle"; c.fillText(text, x + 8, y - 32.5); c.textBaseline = "alphabetic";
 }
 
@@ -3338,7 +3339,7 @@ function anchorPos(a, anim) {
   if (a[0] === "p") { const b = buoyPos(Number(a[1]), anim); return [b.x, b.y - 44, "above"]; }
   if (m && a === "therm") return [m.x + m.w + 28, m.y - 66, "above"];
   if (m && a === "motor") return [m.x + m.w / 2 - 8, m.y - 12, "above"];
-  if (m && a === "hose") return [m.x + m.w / 2, m.y + m.h + 46, "below"];
+  if (m && a === "hose") return [m.x + m.w / 2, m.y + m.h + 54, "below"];
   return [214, 31, "right"];
 }
 function labelParts(e) {
@@ -3406,7 +3407,7 @@ function drawHud(c, f) {
     if (!FX.count || FX.count.n !== left || FX.count.seg !== seg) FX.count = { n: left, seg, born: frameNow };
     const age = (frameNow - FX.count.born) / 1000, pop = reduceMotion ? 1 : 1 + .25 * Math.max(0, 1 - age / .3);
     c.save(); c.translate(70, 112); c.scale(pop, pop);
-    card(c, -56, -50, 112, 100, SUN, 14);
+    card(c, -56, -50, 112, 100, NOTE, 14);
     c.fillStyle = INK; c.textAlign = "center"; c.textBaseline = "middle";
     c.font = "700 12.5px 'Atkinson Hyperlegible', sans-serif"; c.fillText(e.fn === "wait" ? "waiting" : "moving hose", 0, -33);
     c.font = "800 54px " + DISPLAY; c.fillText(String(left), 0, 6);
@@ -3570,7 +3571,7 @@ function drawScene(f, now, dt) {
   if (f.switching && FX.sprayAt == null && LAY.motor) {
     const m = LAY.motor;
     c.font = "700 14px 'Atkinson Hyperlegible', sans-serif"; c.textAlign = "center";
-    card(c, m.x + m.w / 2 - 102, m.y + m.h + 18, 204, 26, SUN, 7);
+    card(c, m.x + m.w / 2 - 106, m.y + m.h + 16, 212, 28, NOTE, 8);
     c.fillStyle = INK; c.fillText("Moving the hose to pond " + f.target, m.x + m.w / 2, m.y + m.h + 36); c.textAlign = "left";
   }
   drawPings(c, now, anim);
