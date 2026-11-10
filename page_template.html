@@ -1263,8 +1263,6 @@ function onEvent(e, live) {
   } else if (e.kind === "fire") {
     if (!live) { FX.fireAt = null; return; }
     FX.fireAt = now;
-    const m = LAY.motor, cx = m.x + m.w / 2, cy = m.y + m.h / 2;
-    if (!reduceMotion) for (let i = 0; i < 22; i++) { const a = Math.random() * 6.28, v = 160 + Math.random() * 260; FX.parts.push({ type: "debris", x: cx, y: cy, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 240, rot: 0, vr: (Math.random() - .5) * 16, size: 6 + Math.random() * 8, life: 2.4 }); }
   } else if (e.kind === "spray") FX.sprayAt = live ? now : now - 8000;
   else if (e.kind === "frozen") FX.frozenAt = live ? now : now - 2000;
   else if (e.kind === "error") FX.errAt = live ? now : null;
@@ -1586,21 +1584,43 @@ function drawMotor(c, f, anim, now, dt) {
   // status light
   const blink = f.temp >= 80 && f.motor && !f.fire && Math.floor(now / 300) % 2;
   ell(c, m.x + m.w - 13, m.y + 13, 5, 5); c.fillStyle = f.fire ? INK : blink ? "#ff2d2d" : f.motor ? "#5ef08a" : CREAM; c.fill(); inkLine(c, 2);
-  // smoke and fire
-  if (!reduceMotion && (f.fire || f.temp > 80) && dt > 0 && Math.random() < (f.fire ? .3 : .1)) FX.smoke.push({ x: m.x + 20 + Math.random() * 70, y: m.y - 4, r: 7, a: 1, dark: f.fire });
+  // smoke: a thick dark plume once it's burning, thin wisps when it's just hot
+  const slow = reduceMotion ? .35 : 1;
+  if (dt > 0 && (f.fire || f.temp > 80) && Math.random() < (f.fire ? .7 : .08) * (reduceMotion ? .4 : 1) && FX.smoke.length < 140) {
+    FX.smoke.push({ x: m.x + 25 + Math.random() * (m.w - 50), y: m.y - (f.fire ? 34 : 2), r: f.fire ? 8 + Math.random() * 6 : 5, a: f.fire ? .42 : .4, dark: f.fire, age: 0 });
+  }
+  if (dt > 0 && f.fire && !reduceMotion && Math.random() < .25 && FX.parts.length < 200) {
+    FX.parts.push({ type: "ember", x: m.x + 20 + Math.random() * (m.w - 40), y: m.y - 10, vx: (Math.random() - .3) * 30, vy: -60 - Math.random() * 60, life: 1 + Math.random() });
+  }
   for (let i = FX.smoke.length - 1; i >= 0; i--) {
     const s = FX.smoke[i];
-    if (dt > 0) { s.y -= 50 * dt; s.x += 14 * dt; s.r += 12 * dt; s.a -= .4 * dt; }
+    if (dt > 0) { s.age += dt * slow; s.y -= (s.dark ? 46 : 40) * dt * slow; s.x += (6 + s.age * 14) * dt * slow; s.r += (s.dark ? 13 : 9) * dt * slow; s.a -= (s.dark ? .09 : .25) * dt * slow; }
     if (s.a <= 0) { FX.smoke.splice(i, 1); continue; }
-    c.globalAlpha = Math.min(1, s.a * 1.5); blob(c, s.x, s.y, s.r, s.r, 80 + i % 5, .08); c.fillStyle = s.dark ? "#5a5552" : "#e8e2d6"; c.fill(); inkLine(c, 2); c.globalAlpha = 1;
+    // dark and dense near the fire, thinning to pale grey as it rises
+    const g = s.dark ? lerp3([40, 38, 40], [150, 148, 146], s.age / 4) : [235, 232, 226];
+    c.fillStyle = rgb(g, s.a);
+    ell(c, s.x + Math.sin(s.age * 2 + i) * 4, s.y, s.r, s.r * .85); c.fill();
   }
-  if (f.fire) for (let i = 0; i < 4; i++) {
-    const fx2 = m.x + 18 + i * 28, h = 26 + Math.sin(anim / 90 + i * 1.7) * 9;
-    c.beginPath(); c.moveTo(fx2 - 12, m.y + 4); c.quadraticCurveTo(fx2 - 8, m.y - h * .5, fx2, m.y - h); c.quadraticCurveTo(fx2 + 8, m.y - h * .5, fx2 + 12, m.y + 4); c.closePath();
-    c.fillStyle = i % 2 ? SUN : CORAL; c.fill(); inkLine(c, 2.5);
+  // flames: three layers of flickering tongues, red outside, yellow in the middle
+  if (f.fire) {
+    const base = m.y + 8, t = anim / 1000 * slow;
+    for (const [col, k] of [["#d63a1f", 1], ["#ff7d1f", .7], ["#ffd84a", .4]]) {
+      c.fillStyle = col;
+      for (let i = 0; i < 7; i++) {
+        const fx2 = m.x + 10 + i * (m.w - 20) / 6;
+        const flick = Math.sin(t * 9 + i * 1.9) * .5 + Math.sin(t * 15.3 + i * 3.1) * .3 + Math.sin(t * 23.7 + i) * .2;
+        const h = (36 + 20 * hash(i * 3.7) + 14 * flick) * k * (i === 0 || i === 6 ? .55 : 1);
+        const w = (12 + 4 * hash(i * 1.3)) * (.55 + .45 * k), sway = Math.sin(t * 5 + i * 1.3) * 7 * k;
+        c.beginPath(); c.moveTo(fx2 - w, base);
+        c.bezierCurveTo(fx2 - w, base - h * .45, fx2 + sway - w * .3, base - h * .72, fx2 + sway, base - h);
+        c.bezierCurveTo(fx2 + sway + w * .3, base - h * .72, fx2 + w, base - h * .45, fx2 + w, base);
+        c.closePath(); c.fill();
+      }
+    }
   }
 }
 function drawThermo(c, f) {
+  f = f.fire ? Object.assign({}, f, { temp: Math.max(f.temp, 100) }) : f;   // a burning motor reads at least 100
   const m = LAY.motor, tx = m.x + m.w + 28, ty = m.y - 26, th = 90;
   rr(c, tx - 9, ty - 4, 18, th + 8, 9); c.fillStyle = CREAM; c.fill(); inkLine(c, 2.5);
   ell(c, tx, ty + th + 10, 13, 13); c.fillStyle = CREAM; c.fill(); inkLine(c, 2.5);
@@ -1608,7 +1628,7 @@ function drawThermo(c, f) {
   c.fillStyle = tcol; ell(c, tx, ty + th + 10, 8.5, 8.5); c.fill(); rr(c, tx - 4, ty + th - th * tk, 8, th * tk + 8, 4); c.fill();
   c.font = "700 11px 'Atkinson Hyperlegible', sans-serif"; c.fillStyle = INK; c.strokeStyle = INK; c.lineWidth = 2;
   for (const v of [50, 100]) { const y = ty + th - th * v / 110; c.beginPath(); c.moveTo(tx + 9, y); c.lineTo(tx + 15, y); c.stroke(); c.fillText(String(v), tx + 18, y + 4); }
-  const label = Math.round(f.temp) + "°C";
+  const label = Math.round(f.temp) + (f.fire ? "°C+" : "°C");
   card(c, tx - 30, ty - 36, 60, 24, f.temp >= 80 || f.fire ? CORAL : CREAM, 6);
   c.fillStyle = INK; c.font = "800 15px " + DISPLAY; c.textAlign = "center"; c.textBaseline = "middle"; c.fillText(label, tx, ty - 23.5);
   c.textAlign = "left"; c.textBaseline = "alphabetic";
@@ -1829,9 +1849,9 @@ function drawParts(c, now, dt) {
     }
     q.life -= dt;
     if (q.life <= 0 || q.y > H + 40) { FX.parts.splice(i, 1); continue; }
-    if (q.type === "confetti") { q.vy = Math.min(q.vy + 40 * dt, 130); q.vx += Math.sin(now / 300 + i) * 4 * dt; } else q.vy += 560 * dt;
+    if (q.type === "confetti") { q.vy = Math.min(q.vy + 40 * dt, 130); q.vx += Math.sin(now / 300 + i) * 4 * dt; } else if (q.type === "ember") q.vx += Math.sin(now / 200 + i) * 30 * dt; else q.vy += 560 * dt;
     q.x += q.vx * dt; q.y += q.vy * dt; if (q.vr) q.rot += q.vr * dt;
-    if (q.type === "debris") { c.save(); c.translate(q.x, q.y); c.rotate(q.rot); c.fillStyle = INK; c.fillRect(-q.size / 2, -q.size / 3, q.size, q.size * .66); c.restore(); }
+    if (q.type === "ember") { c.fillStyle = "rgba(255," + (150 + ((i * 37) % 80)) + ",40," + Math.min(1, q.life) + ")"; c.fillRect(q.x - 1.5, q.y - 1.5, 3, 3); }
     else if (q.type === "drop") { c.fillStyle = q.color; ell(c, q.x, q.y, q.size, q.size); c.fill(); c.strokeStyle = INK; c.lineWidth = 1.2; c.stroke(); }
     else if (q.type === "confetti") { c.save(); c.translate(q.x, q.y); c.rotate(q.rot); c.fillStyle = q.color; c.fillRect(-6, -3.5, 12, 7); c.strokeStyle = INK; c.lineWidth = 1.5; c.strokeRect(-6, -3.5, 12, 7); c.restore(); }
   }
@@ -1857,17 +1877,6 @@ function drawFrozen(c, now) {
   c.lineWidth = 5; c.beginPath(); c.moveTo(cx, cy); c.lineTo(cx + R * .45, cy - R * .2); c.stroke();
   c.lineWidth = 4; c.beginPath(); c.moveTo(cx, cy); c.lineTo(cx - R * .15, cy - R * .7); c.stroke();
 }
-function drawFireBurst(c, now) {
-  const a = Math.max(0, (now - FX.fireAt) / 1000), m = LAY.motor, cx = m.x + m.w / 2, cy = m.y + m.h / 2;
-  if (a < .3) { c.fillStyle = "rgba(255,201,60," + (.6 * (1 - a / .3)) + ")"; c.fillRect(0, 0, W, H); }
-  if (a < 1.6) {
-    const pop = Math.min(1, a / .18);
-    c.save(); c.translate(cx - 150, cy - 40); c.rotate(-.12); c.scale(pop, pop);
-    c.font = "800 56px " + DISPLAY; c.textAlign = "center"; c.textBaseline = "middle";
-    c.lineJoin = "round"; c.lineWidth = 10; c.strokeStyle = INK; c.strokeText("KABOOM!", 4, 4); c.strokeText("KABOOM!", 0, 0);
-    c.fillStyle = SUN; c.fillText("KABOOM!", 0, 0); c.restore();
-  }
-}
 function drawScene(f, now, dt) {
   fitCanvas(sceneCv, ctx, W, H);
   const c = ctx, frozen = FX.frozenAt != null, anim = frozen ? FX.frozenAt : now, adt = frozen ? 0 : dt;
@@ -1877,7 +1886,6 @@ function drawScene(f, now, dt) {
   let storm = 0; for (const p of ponds) storm = Math.max(storm, f["st" + p] || 0);
   const rain = clamp((storm - .06) / .7, 0, 1);
   c.save();
-  if (FX.fireAt != null && !reduceMotion) { const a = (now - FX.fireAt) / 1000; if (a < .9) { const s = 16 * (1 - a / .9); c.translate((Math.random() - .5) * s, (Math.random() - .5) * s); } }
   drawSky(c, hour, night, rain, anim);
   drawLand(c);
   if (SHOW.pipes) for (const p of ponds) drawPipe(c, p);
@@ -1901,7 +1909,6 @@ function drawScene(f, now, dt) {
   drawIntro(c, now, anim);
   drawBanner(c, now);
   c.restore();
-  if (FX.fireAt != null && LAY.motor) drawFireBurst(c, now);
   if (frozen) drawFrozen(c, now);
   if (FX.errAt != null) { const a = (now - FX.errAt) / 1000; if (a < 1.2) { c.strokeStyle = rgb(hex(CORAL), 1 - a / 1.2); c.lineWidth = 16; c.strokeRect(0, 0, W, H); } }
 }
@@ -2091,7 +2098,7 @@ function frame(ts) {
 selectLevel(level.id);
 requestAnimationFrame(frame);
 if (window.__POND_FORCE_MAIN) fallbackToMain(); else startWorker();
-window.__pond = { PB, LEVELS, startRun, selectLevel, step, seek, skip, play, pause, tauForTime, FX, draw: (ts) => { const f = frameAt(PB.data ? PB.simT : 0); drawScene(f, ts, 0); if (SHOW.chart) drawChart(f); }, get SHOW() { return SHOW; }, get level() { return level; } };
+window.__pond = { PB, LEVELS, startRun, selectLevel, step, seek, skip, play, pause, tauForTime, FX, draw: (ts, dt) => { frameNow = ts; const f = frameAt(PB.data ? PB.simT : 0); drawScene(f, ts, dt || 0); if (SHOW.chart) drawChart(f); }, get SHOW() { return SHOW; }, get level() { return level; } };
 })();
 </script>
 </body>
