@@ -324,7 +324,7 @@ dialog.dlg::backdrop { background: rgba(31, 42, 54, .5); }
 </dialog>
 <div class="toast" id="toast" role="status"></div>
 
-<script type="application/json" id="levels-data">[{"id": 1, "title": "How much room?", "topic": "calling a function", "uses": ["pollution"], "task": "Pond 1 is safe while its pollution is 3 or below. **How far below 3 is it?** Print the answer. Your code is tested on two different mornings.", "starter": "# Write your code here\n", "hint": "A function's result is a number, so you can do sums with it, e.g. `10 - pollution(1)`, and print the result.", "answer": "print(3 - pollution(1))\n", "carry": null, "bonus": false, "storm": false, "tests": ["Monday", "Tuesday"], "ponds": 1, "hours": 3, "axis": 3, "preview": {"t": 0, "temp": 20.0, "motor": false, "target": 1, "fire": false, "switching": false, "p1": 2.5, "dead1": false, "in1": 0.045, "st1": 0.0, "tx1": 0.0}}, {"id": 2, "title": "Is it getting worse?", "topic": "variables", "uses": ["pollution", "wait"], "task": "Take two readings of pond 1, three hours apart, and **print how much the pollution went up**.", "starter": "# Write your code here\n", "hint": "Keep each reading in a variable, e.g. `first = ...`, so you can subtract one from the other later.", "answer": "first = pollution(1)\nwait(3)\nsecond = pollution(1)\nprint(round(second - first, 1))\n", "carry": null, "bonus": false, "storm": false, "tests": [], "ponds": 1, "hours": 12, "axis": 3, "preview": {"t": 0, "temp": 20.0, "motor": false, "target": 1, "fire": false, "switching": false, "p1": 2.4, "dead1": false, "in1": 0.3, "st1": 0.0, "tx1": 0.0}}, {"id": 3, "title": "Four readings", "topic": "for loops", "uses": ["pollution", "wait"], "task": "Print a reading of pond 1 every 3 hours, **four times**. Write the reading code only once and let a loop repeat it.", "starter": "# Write your code here\n", "hint": "`for i in range(4):` repeats the indented lines underneath it 4 times. Watch `i` change.", "answer": "for i in range(4):\n    print(pollution(1))\n    wait(3)\n", "carry": null, "bonus": false, "storm": false, "tests": [], "ponds": 1, "hours": 15, "axis": 12, "preview": {"t": 0, "temp": 20.0, "motor": false, "target": 1, "fire": false, "switching": false, "p1": 2.0, "dead1": false, "in1": 0.3, "st1": 0.0, "tx1": 0.0}}, {"id": 4, "title": "Highest and average", "topic": "lists", "uses": ["pollution", "wait"], "task": "A storm is due tonight. Take a reading every 3 hours for a day (8 readings), then print the **highest** reading and the **average**.", "starter": "# Write your code here\n", "hint": "Start with an empty list, `readings = []`, and add to it in the loop with `readings.append(...)`. `max()`, `sum()` and `len()` all work on lists.", "answer": "readings = []\n\nfor i in range(8):\n    readings.append(pollution(1))\n    wait(3)\n\nprint(max(readings))\nprint(sum(readings) / len(readings))\n", "carry": null, "bonus": false, "storm": true, "tests": [], "ponds": 1, "hours": 30, "axis": 24, "preview": {"t": 0, "temp": 20.0, "motor": false, "target": 1, "fire": false, "switching": false, "p1": 1.8, "dead1": false, "in1": 0.045, "st1": 0.0, "tx1": 0.0}}, {"id": 5, "title": "Switch it on", "topic": "if", "uses": ["pollution", "motor_on"], "task": "The aerator cleans the pond but costs money to run. Switch it on **only if** pond 1 is dirtier than 3. Your code is tested on three different mornings.", "starter": "# Write your code here\n", "hint": "`if` runs the indented lines underneath it only when its condition is True.", "answer": "if pollution(1) > 3:\n    motor_on()\n", "carry": null, "bonus": false, "storm": false, "tests": ["Murky", "Clear", "Exactly 3"], "ponds": 1, "hours": 6, "axis": 3, "preview": {"t": 0, "temp": 20.0, "motor": false, "target": 1, "fire": false, "switching": false, "p1": 5.2, "dead1": false, "in1": 0.045, "st1": 0.0, "tx1": 0.0}}, {"id": 6, "title": "Switch it off", "topic": "if", "uses": ["pollution", "motor_off"], "task": "This time the aerator is already running. Switch it **off** if pond 1 is 3 or below, and leave it running if it isn't. Tested on three mornings.", "starter": "# Write your code here\n", "hint": "Like question 5, but the other way round. `<=` means \"less than or equal to\".", "answer": "if pollution(1) <= 3:\n    motor_off()\n", "carry": null, "bonus": false, "storm": false, "tests": ["Clean", "Murky", "Exactly 3"], "ponds": 1, "hours": 6, "axis": 3, "preview": {"t": 0, "temp": 20.0, "motor": true, "target": 1, "fire": false, "switching": false, "p1": 2.0, "dead1": false, "in1": 0.045, "st1": 0.0, "tx1": 0.0}}, {"id": 7, "title": "Danger, warning or ok", "topic": "elif", "uses": ["pollution"], "task": "Print a status for pond 1: **danger** if it's above 6, **warning** if it's above 3, otherwise **ok**.", "starter": "# Write your code here\n", "hint": "Use `if`, `elif` and `else`. Python stops at the first condition that's True, so order matters.", "answer": "level = pollution(1)\n\nif level > 6:\n    print(\"danger\")\nelif level > 3:\n    print(\"warning\")\nelse:\n    print(\"ok\")\n", "carry": null, "bonus": false, "storm": false, "tests": ["7.0", "4.5", "2.0"], "ponds": 1, "hours": 3, "axis": 3, "preview": {"t": 0, "temp": 20.0, "motor": false, "target": 1, "fire": false, "switching": false, "p1": 7.0, "dead1": false, "in1": 0.045, "st1": 0.0, "tx1": 0.0}}, {"id": 8, "title": "Both clean?", "topic": "and", "uses": ["pollution"], "task": "Print **all clear** if pond 1 **and** pond 2 are both 3 or below. If either of them isn't, print **check ponds**.", "starter": "# Write your code here\n", "hint": "`and` is True only when the conditions on both sides are True. Each side needs its own comparison: `one <= 3 and two <= 3`, not `one and two <= 3`.", "answer": "one = pollution(1)\ntwo = pollution(2)\n\nif one <= 3 and two <= 3:\n    print(\"all clear\")\nelse:\n    print(\"check ponds\")\n", "carry": null, "bonus": false, "storm": false, "tests": ["Both clean", "Pond 2 dirty", "Pond 1 dirty"], "ponds": 2, "hours": 3, "axis": 3, "preview": {"t": 0, "temp": 20.0, "motor": false, "target": 1, "fire": false, "switching": false, "p1": 2.1, "dead1": false, "in1": 0.045, "st1": 0.0, "tx1": 0.0, "p2": 2.8, "dead2": false, "in2": 0.045, "st2": 0.0, "tx2": 0.0}}, {"id": 9, "title": "Raise the alarm", "topic": "or", "uses": ["pollution"], "task": "Print **alarm** if pond 1 **or** pond 2 is above 6. If neither is, print **fine**.", "starter": "# Write your code here\n", "hint": "`or` is True when at least one side is True. Like `and`, each side needs its own comparison: `one > 6 or two > 6`.", "answer": "one = pollution(1)\ntwo = pollution(2)\n\nif one > 6 or two > 6:\n    print(\"alarm\")\nelse:\n    print(\"fine\")\n", "carry": null, "bonus": false, "storm": false, "tests": ["Pond 1 high", "Pond 2 high", "Both below 6"], "ponds": 2, "hours": 3, "axis": 3, "preview": {"t": 0, "temp": 20.0, "motor": false, "target": 1, "fire": false, "switching": false, "p1": 6.8, "dead1": false, "in1": 0.045, "st1": 0.0, "tx1": 0.0, "p2": 2.0, "dead2": false, "in2": 0.045, "st2": 0.0, "tx2": 0.0}}, {"id": 10, "title": "Which pond?", "topic": "comparing values", "uses": ["pollution", "switch_to", "motor_on"], "task": "Two ponds, one air hose. Clean **whichever pond is dirtier**.", "starter": "# Write your code here\n", "hint": "Read both ponds into variables, compare them with `if ... > ...:`, and move the hose before switching on.", "answer": "one = pollution(1)\ntwo = pollution(2)\n\nif one > two:\n    switch_to(1)\nelse:\n    switch_to(2)\nmotor_on()\n", "carry": null, "bonus": false, "storm": false, "tests": ["Pond 1 dirtier", "Pond 2 dirtier"], "ponds": 2, "hours": 9, "axis": 9, "preview": {"t": 0, "temp": 20.0, "motor": false, "target": 1, "fire": false, "switching": false, "p1": 5.5, "dead1": false, "in1": 0.045, "st1": 0.0, "tx1": 0.0, "p2": 2.0, "dead2": false, "in2": 0.045, "st2": 0.0, "tx2": 0.0}}, {"id": 11, "title": "Wait for the storm", "topic": "while loops", "uses": ["pollution", "wait", "motor_on"], "task": "A storm is on its way, but nobody knows when. Switch the motor on **as soon as** pond 1 gets dirtier than 3, and not before.", "starter": "# Write your code here\n", "hint": "A `while` loop keeps repeating as long as its condition is True. What should it repeat while the pond is still clean?", "answer": "while pollution(1) <= 3:\n    wait(3)\n\nmotor_on()\n", "carry": null, "bonus": false, "storm": true, "tests": ["Evening storm", "Morning storm"], "ponds": 1, "hours": 30, "axis": 24, "preview": {"t": 0, "temp": 20.0, "motor": false, "target": 1, "fire": false, "switching": false, "p1": 1.8, "dead1": false, "in1": 0.045, "st1": 0.0, "tx1": 0.0}}, {"id": 12, "title": "Stop when it's clean", "topic": "while loops", "uses": ["pollution", "wait", "motor_on", "motor_off"], "task": "Run the motor on pond 1 until the pond is 3 or below, then **switch it off** straight away. Sometimes the pond is clean already.", "starter": "# Write your code here\n", "hint": "This time the loop should keep going while the pond is still dirty. What goes after the loop?", "answer": "motor_on()\n\nwhile pollution(1) > 3:\n    wait(3)\n\nmotor_off()\n", "carry": null, "bonus": false, "storm": false, "tests": ["Dirty pond", "Already clean"], "ponds": 1, "hours": 12, "axis": 6, "preview": {"t": 0, "temp": 20.0, "motor": false, "target": 1, "fire": false, "switching": false, "p1": 6.0, "dead1": false, "in1": 0.045, "st1": 0.0, "tx1": 0.0}}, {"id": 13, "title": "Keep watch", "topic": "while True", "uses": ["pollution", "motor_on", "motor_off", "wait"], "task": "Two days of storms. Every 3 hours, check pond 1: motor on if it's dirtier than 3, off if it isn't. **Keep the fish alive.**", "starter": "# Write your code here\n", "hint": "`while True:` repeats forever (here, until the two days are up). Put the check and a `wait(3)` inside it.", "answer": "while True:\n    if pollution(1) > 3:\n        motor_on()\n    else:\n        motor_off()\n    wait(3)\n", "carry": null, "bonus": false, "storm": true, "tests": [], "ponds": 1, "hours": 48, "axis": null, "preview": {"t": 0, "temp": 20.0, "motor": false, "target": 1, "fire": false, "switching": false, "p1": 2.0, "dead1": false, "in1": 0.045, "st1": 0.0, "tx1": 0.0}}, {"id": 14, "title": "Cool enough?", "topic": "and", "uses": ["pollution", "motor_temp", "motor_on"], "task": "The motor is sometimes still hot from earlier, and it catches fire at 100\u00b0C. Switch it on only if pond 1 is dirtier than 3 **and** the motor is below 50\u00b0C.", "starter": "# Write your code here\n", "hint": "Two conditions joined with `and`, each a full comparison: `if ... > 3 and ... < 50:`", "answer": "if pollution(1) > 3 and motor_temp() < 50:\n    motor_on()\n", "carry": null, "bonus": false, "storm": false, "tests": ["Dirty, cool motor", "Dirty, hot motor", "Clean, cool motor"], "ponds": 1, "hours": 6, "axis": 3, "preview": {"t": 0, "temp": 30, "motor": false, "target": 1, "fire": false, "switching": false, "p1": 5.0, "dead1": false, "in1": 0.045, "st1": 0.0, "tx1": 0.0}}, {"id": 15, "title": "Too hot", "topic": "nested ifs and loops", "uses": ["pollution", "motor_temp", "motor_on", "motor_off", "wait"], "task": "A long storm. Run this code and watch the motor: it heats up 15\u00b0C an hour while running and catches fire at 100\u00b0C. **Change it** so the motor rests and cools down whenever it gets hot.", "starter": "while True:\n    if pollution(1) > 3:\n        motor_on()\n    else:\n        motor_off()\n    wait(3)\n", "hint": "Before switching on, check `motor_temp()`. If it's hot, switch off and keep waiting while it's still warm. An `if` inside an `if`, and a `while` inside that, is fine.", "answer": "while True:\n    if pollution(1) > 3:\n        if motor_temp() > 50:\n            motor_off()\n            while motor_temp() > 20:\n                wait(3)\n        else:\n            motor_on()\n            wait(3)\n    else:\n        motor_off()\n        wait(3)\n", "carry": 13, "bonus": false, "storm": true, "tests": [], "ponds": 1, "hours": 48, "axis": null, "preview": {"t": 0, "temp": 20.0, "motor": false, "target": 1, "fire": false, "switching": false, "p1": 1.5, "dead1": false, "in1": 0.074, "st1": 0.029, "tx1": 0.0}}, {"id": 16, "title": "Your own function", "topic": "def", "uses": ["pollution"], "task": "Write a function called `report` that takes a pond number and prints that pond's pollution. Then use it for **both ponds**.", "starter": "# Write your code here\n", "hint": "`def report(pond):` starts the function. Inside it, `pond` is whatever number you called it with.", "answer": "def report(pond):\n    print(\"Pond\", pond, pollution(pond))\n\nreport(1)\nreport(2)\n", "carry": null, "bonus": false, "storm": false, "tests": [], "ponds": 2, "hours": 6, "axis": 3, "preview": {"t": 0, "temp": 20.0, "motor": false, "target": 1, "fire": false, "switching": false, "p1": 4.2, "dead1": false, "in1": 0.045, "st1": 0.0, "tx1": 0.0, "p2": 1.9, "dead2": false, "in2": 0.045, "st2": 0.0, "tx2": 0.0}}, {"id": 17, "title": "Two ponds", "topic": "functions and loops", "uses": ["pollution", "motor_temp", "motor_on", "motor_off", "switch_to", "wait"], "task": "Look after both ponds for two days. Write a function `clean(pond)` that cleans one pond until it's safe, without overheating the motor, and use it for both ponds over and over.", "starter": "# Write your code here\n", "hint": "Inside `clean`: move the hose there, then a `while` loop like question 12 with your cool-down from question 15. Switch the motor off at the end: the hose can only move when it's off.", "answer": "def clean(pond):\n    switch_to(pond)\n    while pollution(pond) > 3:\n        if motor_temp() > 50:\n            motor_off()\n            while motor_temp() > 20:\n                wait(3)\n        else:\n            motor_on()\n            wait(3)\n    motor_off()\n\nwhile True:\n    clean(1)\n    clean(2)\n", "carry": null, "bonus": false, "storm": true, "tests": [], "ponds": 2, "hours": 48, "axis": null, "preview": {"t": 0, "temp": 20.0, "motor": false, "target": 1, "fire": false, "switching": false, "p1": 1.5, "dead1": false, "in1": 0.176, "st1": 0.131, "tx1": 0.0, "p2": 1.5, "dead2": false, "in2": 0.045, "st2": 0.0, "tx2": 0.0}}, {"id": 18, "title": "Pond Rescue", "topic": "the full challenge", "uses": ["pollution", "motor_temp", "motor_on", "motor_off", "switch_to", "wait"], "task": "Four days, two ponds, three storms, and on day 3 a barrel of chemicals falls into pond 1 and keeps leaking. Keep every fish alive without setting the motor on fire. **Bonus:** use the motor for as few hours as you can.", "starter": "# Write your code here\n", "hint": "Your question 17 code is a good start. If a pond dies, look at the chart: was the motor cooling down, or busy at the other pond? The toxic leak keeps going, so don't leave pond 1 too early.", "answer": "while True:\n    for pond in [1, 2]:\n        switch_to(pond)\n        while pollution(pond) > 3:\n            if motor_temp() > 50:\n                motor_off()\n                while motor_temp() > 20:\n                    wait(3)\n            else:\n                motor_on()\n                wait(3)\n        motor_off()\n", "carry": 17, "bonus": true, "storm": true, "tests": [], "ponds": 2, "hours": 96, "axis": null, "preview": {"t": 0, "temp": 20.0, "motor": false, "target": 1, "fire": false, "switching": false, "p1": 1.5, "dead1": false, "in1": 0.056, "st1": 0.011, "tx1": 0.0, "p2": 1.5, "dead2": false, "in2": 0.045, "st2": 0.0, "tx2": 0.0}}]</script>
+<script type="application/json" id="levels-data">[{"id": 1, "title": "How much room?", "topic": "calling a function", "uses": ["pollution"], "task": "Pond 1 is safe while its pollution is 3 or below. **How far below 3 is it?** Print the answer. Your code is tested on two different mornings.", "starter": "# Write your code here\n", "hint": "A function's result is a number, so you can do sums with it, e.g. `10 - pollution(1)`, and print the result.", "answer": "print(3 - pollution(1))\n", "carry": null, "bonus": false, "storm": false, "tests": ["Monday", "Tuesday"], "ponds": 1, "hours": 3, "axis": 3, "preview": {"t": 0, "temp": 20.0, "motor": false, "target": 1, "fire": false, "switching": false, "p1": 2.5, "dead1": false, "in1": 0.045, "st1": 0.0, "tx1": 0.0}}, {"id": 2, "title": "Is it getting worse?", "topic": "variables", "uses": ["pollution", "wait"], "task": "Take two readings of pond 1, three hours apart, and **print how much the pollution went up**.", "starter": "# Write your code here\n", "hint": "Keep each reading in a variable, e.g. `first = ...`, so you can subtract one from the other later.", "answer": "first = pollution(1)\nwait(3)\nsecond = pollution(1)\nprint(round(second - first, 1))\n", "carry": null, "bonus": false, "storm": false, "tests": [], "ponds": 1, "hours": 12, "axis": 3, "preview": {"t": 0, "temp": 20.0, "motor": false, "target": 1, "fire": false, "switching": false, "p1": 2.4, "dead1": false, "in1": 0.3, "st1": 0.0, "tx1": 0.0}}, {"id": 3, "title": "Four readings", "topic": "for loops", "uses": ["pollution", "wait"], "task": "Print a reading of pond 1 every 3 hours, **four times**. Write the reading code only once and let a loop repeat it.", "starter": "# Write your code here\n", "hint": "`for i in range(4):` repeats the indented lines underneath it 4 times. Watch `i` change.", "answer": "for i in range(4):\n    print(pollution(1))\n    wait(3)\n", "carry": null, "bonus": false, "storm": false, "tests": [], "ponds": 1, "hours": 24, "axis": 12, "preview": {"t": 0, "temp": 20.0, "motor": false, "target": 1, "fire": false, "switching": false, "p1": 2.0, "dead1": false, "in1": 0.3, "st1": 0.0, "tx1": 0.0}}, {"id": 4, "title": "Keep them in a list", "topic": "lists", "uses": ["pollution", "wait"], "task": "Your code from question 3 is in the editor. Change it so the four readings are **kept in a list**, then print the whole list once, at the end.", "starter": "for i in range(4):\n    print(pollution(1))\n    wait(3)\n", "hint": "Start with an empty list before the loop, `readings = []`, and add to it inside the loop with `readings.append(...)`.", "answer": "readings = []\n\nfor i in range(4):\n    readings.append(pollution(1))\n    wait(3)\n\nprint(readings)\n", "carry": 3, "bonus": false, "storm": false, "tests": [], "ponds": 1, "hours": 24, "axis": 12, "preview": {"t": 0, "temp": 20.0, "motor": false, "target": 1, "fire": false, "switching": false, "p1": 2.0, "dead1": false, "in1": 0.3, "st1": 0.0, "tx1": 0.0}}, {"id": 5, "title": "Highest and average", "topic": "lists", "uses": ["pollution", "wait"], "task": "A storm is due tonight. Your list code is in the editor: make it take readings for a whole day (8 readings, 3 hours apart), then print the **highest** reading and the **average**.", "starter": "readings = []\n\nfor i in range(4):\n    readings.append(pollution(1))\n    wait(3)\n\nprint(readings)\n", "hint": "`max()`, `sum()` and `len()` all work on lists.", "answer": "readings = []\n\nfor i in range(8):\n    readings.append(pollution(1))\n    wait(3)\n\nprint(max(readings))\nprint(sum(readings) / len(readings))\n", "carry": 4, "bonus": false, "storm": true, "tests": [], "ponds": 1, "hours": 30, "axis": 24, "preview": {"t": 0, "temp": 20.0, "motor": false, "target": 1, "fire": false, "switching": false, "p1": 1.8, "dead1": false, "in1": 0.045, "st1": 0.0, "tx1": 0.0}}, {"id": 6, "title": "Switch it on", "topic": "if", "uses": ["pollution", "motor_on"], "task": "The aerator cleans the pond but costs money to run. Switch it on **only if** pond 1 is dirtier than 3. Your code is tested on three different mornings.", "starter": "# Write your code here\n", "hint": "`if` runs the indented lines underneath it only when its condition is True.", "answer": "if pollution(1) > 3:\n    motor_on()\n", "carry": null, "bonus": false, "storm": false, "tests": ["Murky", "Clear", "Exactly 3"], "ponds": 1, "hours": 6, "axis": 3, "preview": {"t": 0, "temp": 20.0, "motor": false, "target": 1, "fire": false, "switching": false, "p1": 5.2, "dead1": false, "in1": 0.045, "st1": 0.0, "tx1": 0.0}}, {"id": 7, "title": "Switch it off", "topic": "if", "uses": ["pollution", "motor_off"], "task": "Your switch-on code is in the editor. This time the aerator is already running: change the code so it switches **off** if pond 1 is 3 or below, and keeps running if it isn't. Tested on three mornings.", "starter": "if pollution(1) > 3:\n    motor_on()\n", "hint": "Flip the condition round. `<=` means \"less than or equal to\".", "answer": "if pollution(1) <= 3:\n    motor_off()\n", "carry": 6, "bonus": false, "storm": false, "tests": ["Clean", "Murky", "Exactly 3"], "ponds": 1, "hours": 6, "axis": 3, "preview": {"t": 0, "temp": 20.0, "motor": true, "target": 1, "fire": false, "switching": false, "p1": 2.0, "dead1": false, "in1": 0.045, "st1": 0.0, "tx1": 0.0}}, {"id": 8, "title": "Danger, warning or ok", "topic": "elif", "uses": ["pollution"], "task": "Print a status for pond 1: **danger** if it's above 6, **warning** if it's above 3, otherwise **ok**.", "starter": "# Write your code here\n", "hint": "Use `if`, `elif` and `else`. Python stops at the first condition that's True, so order matters.", "answer": "level = pollution(1)\n\nif level > 6:\n    print(\"danger\")\nelif level > 3:\n    print(\"warning\")\nelse:\n    print(\"ok\")\n", "carry": null, "bonus": false, "storm": false, "tests": ["7.0", "4.5", "2.0"], "ponds": 1, "hours": 3, "axis": 3, "preview": {"t": 0, "temp": 20.0, "motor": false, "target": 1, "fire": false, "switching": false, "p1": 7.0, "dead1": false, "in1": 0.045, "st1": 0.0, "tx1": 0.0}}, {"id": 9, "title": "Both clean?", "topic": "and", "uses": ["pollution"], "task": "Print **all clear** if pond 1 **and** pond 2 are both 3 or below. If either of them isn't, print **check ponds**.", "starter": "# Write your code here\n", "hint": "`and` is True only when the conditions on both sides are True. Each side needs its own comparison: `one <= 3 and two <= 3`, not `one and two <= 3`.", "answer": "one = pollution(1)\ntwo = pollution(2)\n\nif one <= 3 and two <= 3:\n    print(\"all clear\")\nelse:\n    print(\"check ponds\")\n", "carry": null, "bonus": false, "storm": false, "tests": ["Both clean", "Pond 2 dirty", "Pond 1 dirty"], "ponds": 2, "hours": 3, "axis": 3, "preview": {"t": 0, "temp": 20.0, "motor": false, "target": 1, "fire": false, "switching": false, "p1": 2.1, "dead1": false, "in1": 0.045, "st1": 0.0, "tx1": 0.0, "p2": 2.8, "dead2": false, "in2": 0.045, "st2": 0.0, "tx2": 0.0}}, {"id": 10, "title": "Raise the alarm", "topic": "or", "uses": ["pollution"], "task": "Your all-clear code is in the editor. Change it to print **alarm** if pond 1 **or** pond 2 is above 6, and **fine** if neither is.", "starter": "one = pollution(1)\ntwo = pollution(2)\n\nif one <= 3 and two <= 3:\n    print(\"all clear\")\nelse:\n    print(\"check ponds\")\n", "hint": "`or` is True when at least one side is True. Like `and`, each side needs its own comparison: `one > 6 or two > 6`.", "answer": "one = pollution(1)\ntwo = pollution(2)\n\nif one > 6 or two > 6:\n    print(\"alarm\")\nelse:\n    print(\"fine\")\n", "carry": 9, "bonus": false, "storm": false, "tests": ["Pond 1 high", "Pond 2 high", "Both below 6"], "ponds": 2, "hours": 3, "axis": 3, "preview": {"t": 0, "temp": 20.0, "motor": false, "target": 1, "fire": false, "switching": false, "p1": 6.8, "dead1": false, "in1": 0.045, "st1": 0.0, "tx1": 0.0, "p2": 2.0, "dead2": false, "in2": 0.045, "st2": 0.0, "tx2": 0.0}}, {"id": 11, "title": "Which pond?", "topic": "comparing values", "uses": ["pollution", "switch_to", "motor_on"], "task": "Two ponds, one air hose. Clean **whichever pond is dirtier**.", "starter": "# Write your code here\n", "hint": "Read both ponds into variables, compare them with `if ... > ...:`, and move the hose before switching on.", "answer": "one = pollution(1)\ntwo = pollution(2)\n\nif one > two:\n    switch_to(1)\nelse:\n    switch_to(2)\nmotor_on()\n", "carry": null, "bonus": false, "storm": false, "tests": ["Pond 1 dirtier", "Pond 2 dirtier"], "ponds": 2, "hours": 9, "axis": 9, "preview": {"t": 0, "temp": 20.0, "motor": false, "target": 1, "fire": false, "switching": false, "p1": 5.5, "dead1": false, "in1": 0.045, "st1": 0.0, "tx1": 0.0, "p2": 2.0, "dead2": false, "in2": 0.045, "st2": 0.0, "tx2": 0.0}}, {"id": 12, "title": "Wait for the storm", "topic": "while loops", "uses": ["pollution", "wait", "motor_on"], "task": "A storm is on its way, but nobody knows when. Switch the motor on **as soon as** pond 1 gets dirtier than 3, and not before.", "starter": "# Write your code here\n", "hint": "A `while` loop keeps repeating as long as its condition is True. What should it repeat while the pond is still clean?", "answer": "while pollution(1) <= 3:\n    wait(3)\n\nmotor_on()\n", "carry": null, "bonus": false, "storm": true, "tests": ["Evening storm", "Morning storm"], "ponds": 1, "hours": 30, "axis": 24, "preview": {"t": 0, "temp": 20.0, "motor": false, "target": 1, "fire": false, "switching": false, "p1": 1.8, "dead1": false, "in1": 0.045, "st1": 0.0, "tx1": 0.0}}, {"id": 13, "title": "Stop when it's clean", "topic": "while loops", "uses": ["pollution", "wait", "motor_on", "motor_off"], "task": "Your storm code is in the editor. Now turn it round: run the motor on pond 1 until the pond is 3 or below, then **switch it off** straight away. Sometimes the pond is clean already.", "starter": "while pollution(1) <= 3:\n    wait(3)\n\nmotor_on()\n", "hint": "This time the loop should keep going while the pond is still dirty. What goes after the loop?", "answer": "motor_on()\n\nwhile pollution(1) > 3:\n    wait(3)\n\nmotor_off()\n", "carry": 12, "bonus": false, "storm": false, "tests": ["Dirty pond", "Already clean"], "ponds": 1, "hours": 12, "axis": 6, "preview": {"t": 0, "temp": 20.0, "motor": false, "target": 1, "fire": false, "switching": false, "p1": 6.0, "dead1": false, "in1": 0.045, "st1": 0.0, "tx1": 0.0}}, {"id": 14, "title": "Keep watch", "topic": "while True", "uses": ["pollution", "motor_on", "motor_off", "wait"], "task": "Two days of storms. Every 3 hours, check pond 1: motor on if it's dirtier than 3, off if it isn't. **Keep the fish alive.**", "starter": "# Write your code here\n", "hint": "`while True:` repeats forever (here, until the two days are up). Put the check and a `wait(3)` inside it.", "answer": "while True:\n    if pollution(1) > 3:\n        motor_on()\n    else:\n        motor_off()\n    wait(3)\n", "carry": null, "bonus": false, "storm": true, "tests": [], "ponds": 1, "hours": 48, "axis": null, "preview": {"t": 0, "temp": 20.0, "motor": false, "target": 1, "fire": false, "switching": false, "p1": 2.0, "dead1": false, "in1": 0.045, "st1": 0.0, "tx1": 0.0}}, {"id": 15, "title": "Cool enough?", "topic": "and", "uses": ["pollution", "motor_temp", "motor_on"], "task": "The motor is sometimes still hot from earlier, and it catches fire at 100\u00b0C. Switch it on only if pond 1 is dirtier than 3 **and** the motor is below 50\u00b0C.", "starter": "# Write your code here\n", "hint": "Two conditions joined with `and`, each a full comparison: `if ... > 3 and ... < 50:`", "answer": "if pollution(1) > 3 and motor_temp() < 50:\n    motor_on()\n", "carry": null, "bonus": false, "storm": false, "tests": ["Dirty, cool motor", "Dirty, hot motor", "Clean, cool motor"], "ponds": 1, "hours": 6, "axis": 3, "preview": {"t": 0, "temp": 30, "motor": false, "target": 1, "fire": false, "switching": false, "p1": 5.0, "dead1": false, "in1": 0.045, "st1": 0.0, "tx1": 0.0}}, {"id": 16, "title": "Too hot", "topic": "nested ifs and loops", "uses": ["pollution", "motor_temp", "motor_on", "motor_off", "wait"], "task": "A long storm. Run this code and watch the motor: it heats up 15\u00b0C an hour while running and catches fire at 100\u00b0C. **Change it** so the motor rests and cools down whenever it gets hot.", "starter": "while True:\n    if pollution(1) > 3:\n        motor_on()\n    else:\n        motor_off()\n    wait(3)\n", "hint": "Before switching on, check `motor_temp()`. If it's hot, switch off and keep waiting while it's still warm. An `if` inside an `if`, and a `while` inside that, is fine.", "answer": "while True:\n    if pollution(1) > 3:\n        if motor_temp() > 50:\n            motor_off()\n            while motor_temp() > 20:\n                wait(3)\n        else:\n            motor_on()\n            wait(3)\n    else:\n        motor_off()\n        wait(3)\n", "carry": 14, "bonus": false, "storm": true, "tests": [], "ponds": 1, "hours": 48, "axis": null, "preview": {"t": 0, "temp": 20.0, "motor": false, "target": 1, "fire": false, "switching": false, "p1": 1.5, "dead1": false, "in1": 0.074, "st1": 0.029, "tx1": 0.0}}, {"id": 17, "title": "Your own function", "topic": "def", "uses": ["pollution"], "task": "Write a function called `report` that takes a pond number and prints that pond's pollution. Then use it for **both ponds**.", "starter": "# Write your code here\n", "hint": "`def report(pond):` starts the function. Inside it, `pond` is whatever number you called it with.", "answer": "def report(pond):\n    print(\"Pond\", pond, pollution(pond))\n\nreport(1)\nreport(2)\n", "carry": null, "bonus": false, "storm": false, "tests": [], "ponds": 2, "hours": 6, "axis": 3, "preview": {"t": 0, "temp": 20.0, "motor": false, "target": 1, "fire": false, "switching": false, "p1": 4.2, "dead1": false, "in1": 0.045, "st1": 0.0, "tx1": 0.0, "p2": 1.9, "dead2": false, "in2": 0.045, "st2": 0.0, "tx2": 0.0}}, {"id": 18, "title": "Two ponds", "topic": "functions and loops", "uses": ["pollution", "motor_temp", "motor_on", "motor_off", "switch_to", "wait"], "task": "Look after both ponds for two days. Write a function `clean(pond)` that cleans one pond until it's safe, without overheating the motor, and use it for both ponds over and over.", "starter": "# Write your code here\n", "hint": "Inside `clean`: move the hose there, then a `while` loop like question 13 with your cool-down from question 16. Switch the motor off at the end: the hose can only move when it's off.", "answer": "def clean(pond):\n    switch_to(pond)\n    while pollution(pond) > 3:\n        if motor_temp() > 50:\n            motor_off()\n            while motor_temp() > 20:\n                wait(3)\n        else:\n            motor_on()\n            wait(3)\n    motor_off()\n\nwhile True:\n    clean(1)\n    clean(2)\n", "carry": null, "bonus": false, "storm": true, "tests": [], "ponds": 2, "hours": 48, "axis": null, "preview": {"t": 0, "temp": 20.0, "motor": false, "target": 1, "fire": false, "switching": false, "p1": 1.5, "dead1": false, "in1": 0.176, "st1": 0.131, "tx1": 0.0, "p2": 1.5, "dead2": false, "in2": 0.045, "st2": 0.0, "tx2": 0.0}}, {"id": 19, "title": "Pond Rescue", "topic": "the full challenge", "uses": ["pollution", "motor_temp", "motor_on", "motor_off", "switch_to", "wait"], "task": "Four days, two ponds, three storms, and on day 3 a barrel of chemicals falls into pond 1 and keeps leaking. Keep every fish alive without setting the motor on fire. **Bonus:** use the motor for as few hours as you can.", "starter": "# Write your code here\n", "hint": "Your question 18 code is a good start. If a pond dies, look at the chart: was the motor cooling down, or busy at the other pond? The toxic leak keeps going, so don't leave pond 1 too early.", "answer": "while True:\n    for pond in [1, 2]:\n        switch_to(pond)\n        while pollution(pond) > 3:\n            if motor_temp() > 50:\n                motor_off()\n                while motor_temp() > 20:\n                    wait(3)\n            else:\n                motor_on()\n                wait(3)\n        motor_off()\n", "carry": 18, "bonus": true, "storm": true, "tests": [], "ponds": 2, "hours": 96, "axis": null, "preview": {"t": 0, "temp": 20.0, "motor": false, "target": 1, "fire": false, "switching": false, "p1": 1.5, "dead1": false, "in1": 0.056, "st1": 0.011, "tx1": 0.0, "p2": 1.5, "dead2": false, "in2": 0.045, "st2": 0.0, "tx2": 0.0}}]</script>
 <script type="text/plain" id="engine-src">"""Pond Rescue: the simulation behind the page.
 
 Students write Python that calls pollution(), motor_temp(), motor_on(), motor_off(), switch_to() and
@@ -351,12 +351,12 @@ SAFE = 3.0            # 3 or below is safe
 DEADLY = 8.0          # above 8 the fish die
 AERATE = 1.5          # pollution removed per hour by a running aerator
 SWITCH_HOURS = 3      # swapping the air hose to the other pond takes this long
-SENSOR_HOURS = 3      # the sensors update every 3 hours, so wait() works in steps of 3
+SENSOR_HOURS = 3      # wait() with no number waits this long
 DECAY = 0.03          # natural clean-up per hour (fraction)
 BASE_INFLOW = 0.045   # background pollution per hour
 START_CLOCK = 8       # every run starts at 08:00 on day 1
 
-# ---------------- the final challenge (question 18) ----------------
+# ---------------- the final challenge (question 19) ----------------
 # Tuned so the model answer only just survives (peak pollution about 7.7).
 HOURS = 96            # 4 days
 START_POLLUTION = {1: 1.5, 2: 1.5}
@@ -683,12 +683,13 @@ def make_builtins(sim):
             sim.switching = False
 
     def wait(hours=None):
-        """Let time pass: 3 hours, or wait(6), wait(9)... The sensors only update every 3 hours."""
+        """Let time pass: wait() is 3 hours, wait(x) is x hours. Zero or less lets no time pass."""
         shown = "" if hours is None else repr(hours)
         if hours is None:
             hours = SENSOR_HOURS
-        if not isinstance(hours, int) or isinstance(hours, bool) or hours <= 0 or hours % SENSOR_HOURS:
-            raise PondError(f"wait({hours!r}): the sensors only update every 3 hours, so use wait(3), wait(6), wait(9)...")
+        if isinstance(hours, bool) or not isinstance(hours, (int, float)):
+            raise PondError(f"wait({hours!r}): give it a number of hours, e.g. wait(3).")
+        hours = max(0, int(hours))   # the ponds move on in whole hours
         if sim.halt is not None:
             raise sim.halt()
         sim.log_call("wait", shown, hours=hours)
@@ -990,6 +991,20 @@ def goal_four(sim, sc, ns, called):
     return True, f"Readings: {values}. It's creeping up every 3 hours."
 
 
+def goal_list(sim, sc, ns, called):
+    seen = _readings_by_time(sim)
+    values = [seen[t] for t in sorted(seen)]
+    if len(values) < 4:
+        return False, (f"You read the sensor at {len(values)} different time{'' if len(values) == 1 else 's'}. "
+                       "Take 4 readings, with a wait in between.")
+    lines = _printed_numbers(sim)
+    if any(len(nums) >= 4 and all(any(abs(x - v) < 0.051 for x in nums) for v in values[:4]) for nums in lines):
+        return True, f"All four readings in one list: {values[:4]}."
+    if sum(1 for nums in lines if len(nums) == 1) >= 4:
+        return False, "You printed each reading on its own line. Keep them in a list instead, and print the list once at the end."
+    return False, "Keep the readings in a list with readings.append(...), and print the list at the end."
+
+
 def goal_log(sim, sc, ns, called):
     seen = _readings_by_time(sim)
     n = len(seen)
@@ -1235,17 +1250,36 @@ LEVELS = [
             "    print(pollution(1))\n"
             "    wait(3)\n"
         ),
-        "cases": [Scenario("", hours=15, ponds=1, start={1: 2.0}, base=0.3, after_code=0)],
+        "cases": [Scenario("", hours=24, ponds=1, start={1: 2.0}, base=0.3, after_code=0)],
         "goal": goal_four,
     },
     {
-        "id": 4, "title": "Highest and average", "topic": "lists",
+        "id": 4, "title": "Keep them in a list", "topic": "lists",
+        "uses": ["pollution", "wait"], "axis": 12,
+        "task": ("Your code from question 3 is in the editor. Change it so the four readings are **kept in a list**, "
+                 "then print the whole list once, at the end."),
+        "starter": None,
+        "hint": ("Start with an empty list before the loop, `readings = []`, and add to it inside the loop with "
+                 "`readings.append(...)`."),
+        "answer": (
+            "readings = []\n"
+            "\n"
+            "for i in range(4):\n"
+            "    readings.append(pollution(1))\n"
+            "    wait(3)\n"
+            "\n"
+            "print(readings)\n"
+        ),
+        "cases": [Scenario("", hours=24, ponds=1, start={1: 2.0}, base=0.3, after_code=0)],
+        "goal": goal_list,
+    },
+    {
+        "id": 5, "title": "Highest and average", "topic": "lists",
         "uses": ["pollution", "wait"], "axis": 24,
-        "task": ("A storm is due tonight. Take a reading every 3 hours for a day (8 readings), then print the "
-                 "**highest** reading and the **average**."),
-        "starter": BLANK,
-        "hint": ("Start with an empty list, `readings = []`, and add to it in the loop with `readings.append(...)`. "
-                 "`max()`, `sum()` and `len()` all work on lists."),
+        "task": ("A storm is due tonight. Your list code is in the editor: make it take readings for a whole day "
+                 "(8 readings, 3 hours apart), then print the **highest** reading and the **average**."),
+        "starter": None,
+        "hint": "`max()`, `sum()` and `len()` all work on lists.",
         "answer": (
             "readings = []\n"
             "\n"
@@ -1260,7 +1294,7 @@ LEVELS = [
         "goal": goal_log,
     },
     {
-        "id": 5, "title": "Switch it on", "topic": "if",
+        "id": 6, "title": "Switch it on", "topic": "if",
         "uses": ["pollution", "motor_on"], "axis": 3,
         "task": ("The aerator cleans the pond but costs money to run. Switch it on **only if** pond 1 is "
                  "dirtier than 3. Your code is tested on three different mornings."),
@@ -1278,12 +1312,12 @@ LEVELS = [
         "goal": goal_decide,
     },
     {
-        "id": 6, "title": "Switch it off", "topic": "if",
+        "id": 7, "title": "Switch it off", "topic": "if",
         "uses": ["pollution", "motor_off"], "axis": 3,
-        "task": ("This time the aerator is already running. Switch it **off** if pond 1 is 3 or below, and leave it "
-                 "running if it isn't. Tested on three mornings."),
-        "starter": BLANK,
-        "hint": "Like question 5, but the other way round. `<=` means \"less than or equal to\".",
+        "task": ("Your switch-on code is in the editor. This time the aerator is already running: change the code "
+                 "so it switches **off** if pond 1 is 3 or below, and keeps running if it isn't. Tested on three mornings."),
+        "starter": None,
+        "hint": "Flip the condition round. `<=` means \"less than or equal to\".",
         "answer": (
             "if pollution(1) <= 3:\n"
             "    motor_off()\n"
@@ -1296,7 +1330,7 @@ LEVELS = [
         "goal": goal_switch_off,
     },
     {
-        "id": 7, "title": "Danger, warning or ok", "topic": "elif",
+        "id": 8, "title": "Danger, warning or ok", "topic": "elif",
         "uses": ["pollution"], "axis": 3,
         "task": "Print a status for pond 1: **danger** if it's above 6, **warning** if it's above 3, otherwise **ok**.",
         "starter": BLANK,
@@ -1319,7 +1353,7 @@ LEVELS = [
         "goal": goal_label,
     },
     {
-        "id": 8, "title": "Both clean?", "topic": "and",
+        "id": 9, "title": "Both clean?", "topic": "and",
         "uses": ["pollution"], "axis": 3,
         "task": ("Print **all clear** if pond 1 **and** pond 2 are both 3 or below. If either of them isn't, print "
                  "**check ponds**."),
@@ -1343,10 +1377,11 @@ LEVELS = [
         "goal": goal_both_clean,
     },
     {
-        "id": 9, "title": "Raise the alarm", "topic": "or",
+        "id": 10, "title": "Raise the alarm", "topic": "or",
         "uses": ["pollution"], "axis": 3,
-        "task": "Print **alarm** if pond 1 **or** pond 2 is above 6. If neither is, print **fine**.",
-        "starter": BLANK,
+        "task": ("Your all-clear code is in the editor. Change it to print **alarm** if pond 1 **or** pond 2 is above 6, "
+                 "and **fine** if neither is."),
+        "starter": None,
         "hint": ("`or` is True when at least one side is True. Like `and`, each side needs its own comparison: "
                  "`one > 6 or two > 6`."),
         "answer": (
@@ -1366,7 +1401,7 @@ LEVELS = [
         "goal": goal_alarm,
     },
     {
-        "id": 10, "title": "Which pond?", "topic": "comparing values",
+        "id": 11, "title": "Which pond?", "topic": "comparing values",
         "uses": ["pollution", "switch_to", "motor_on"], "axis": 9,
         "task": "Two ponds, one air hose. Clean **whichever pond is dirtier**.",
         "starter": BLANK,
@@ -1388,7 +1423,7 @@ LEVELS = [
         "goal": goal_dirtier,
     },
     {
-        "id": 11, "title": "Wait for the storm", "topic": "while loops",
+        "id": 12, "title": "Wait for the storm", "topic": "while loops",
         "uses": ["pollution", "wait", "motor_on"], "axis": 24,
         "task": ("A storm is on its way, but nobody knows when. Switch the motor on **as soon as** pond 1 gets "
                  "dirtier than 3, and not before."),
@@ -1407,11 +1442,11 @@ LEVELS = [
         "goal": goal_wait_storm,
     },
     {
-        "id": 12, "title": "Stop when it's clean", "topic": "while loops",
+        "id": 13, "title": "Stop when it's clean", "topic": "while loops",
         "uses": ["pollution", "wait", "motor_on", "motor_off"], "axis": 6,
-        "task": ("Run the motor on pond 1 until the pond is 3 or below, then **switch it off** straight away. "
-                 "Sometimes the pond is clean already."),
-        "starter": BLANK,
+        "task": ("Your storm code is in the editor. Now turn it round: run the motor on pond 1 until the pond is 3 or "
+                 "below, then **switch it off** straight away. Sometimes the pond is clean already."),
+        "starter": None,
         "hint": "This time the loop should keep going while the pond is still dirty. What goes after the loop?",
         "answer": (
             "motor_on()\n"
@@ -1428,7 +1463,7 @@ LEVELS = [
         "goal": goal_stop_clean,
     },
     {
-        "id": 13, "title": "Keep watch", "topic": "while True",
+        "id": 14, "title": "Keep watch", "topic": "while True",
         "uses": ["pollution", "motor_on", "motor_off", "wait"],
         "task": ("Two days of storms. Every 3 hours, check pond 1: motor on if it's dirtier than 3, off if it isn't. "
                  "**Keep the fish alive.**"),
@@ -1451,7 +1486,7 @@ LEVELS = [
         "goal": goal_survive,
     },
     {
-        "id": 14, "title": "Cool enough?", "topic": "and",
+        "id": 15, "title": "Cool enough?", "topic": "and",
         "uses": ["pollution", "motor_temp", "motor_on"], "axis": 3,
         "task": ("The motor is sometimes still hot from earlier, and it catches fire at 100°C. Switch it on only if "
                  "pond 1 is dirtier than 3 **and** the motor is below 50°C."),
@@ -1470,8 +1505,8 @@ LEVELS = [
         "goal": goal_cool_enough,
     },
     {
-        "id": 15, "title": "Too hot", "topic": "nested ifs and loops",
-        "uses": ["pollution", "motor_temp", "motor_on", "motor_off", "wait"], "carry": 13,
+        "id": 16, "title": "Too hot", "topic": "nested ifs and loops",
+        "uses": ["pollution", "motor_temp", "motor_on", "motor_off", "wait"], "carry": 14,
         "task": ("A long storm. Run this code and watch the motor: it heats up 15°C an hour while running and catches "
                  "fire at 100°C. **Change it** so the motor rests and cools down whenever it gets hot."),
         "starter": (
@@ -1503,7 +1538,7 @@ LEVELS = [
         "goal": goal_survive,
     },
     {
-        "id": 16, "title": "Your own function", "topic": "def",
+        "id": 17, "title": "Your own function", "topic": "def",
         "uses": ["pollution"], "axis": 3,
         "task": ("Write a function called `report` that takes a pond number and prints that pond's pollution. "
                  "Then use it for **both ponds**."),
@@ -1520,13 +1555,13 @@ LEVELS = [
         "goal": goal_report,
     },
     {
-        "id": 17, "title": "Two ponds", "topic": "functions and loops",
+        "id": 18, "title": "Two ponds", "topic": "functions and loops",
         "uses": ["pollution", "motor_temp", "motor_on", "motor_off", "switch_to", "wait"],
         "task": ("Look after both ponds for two days. Write a function `clean(pond)` that cleans one pond until it's "
                  "safe, without overheating the motor, and use it for both ponds over and over."),
         "starter": BLANK,
-        "hint": ("Inside `clean`: move the hose there, then a `while` loop like question 12 with your cool-down from "
-                 "question 15. Switch the motor off at the end: the hose can only move when it's off."),
+        "hint": ("Inside `clean`: move the hose there, then a `while` loop like question 13 with your cool-down from "
+                 "question 16. Switch the motor off at the end: the hose can only move when it's off."),
         "answer": (
             "def clean(pond):\n"
             "    switch_to(pond)\n"
@@ -1550,14 +1585,14 @@ LEVELS = [
         "goal": goal_function,
     },
     {
-        "id": 18, "title": "Pond Rescue", "topic": "the full challenge",
-        "uses": ["pollution", "motor_temp", "motor_on", "motor_off", "switch_to", "wait"], "carry": 17,
+        "id": 19, "title": "Pond Rescue", "topic": "the full challenge",
+        "uses": ["pollution", "motor_temp", "motor_on", "motor_off", "switch_to", "wait"], "carry": 18,
         "bonus": True,
         "task": ("Four days, two ponds, three storms, and on day 3 a barrel of chemicals falls into pond 1 and keeps "
                  "leaking. Keep every fish alive without setting the motor on fire. **Bonus:** use the motor for as "
                  "few hours as you can."),
         "starter": BLANK,
-        "hint": ("Your question 17 code is a good start. If a pond dies, look at the chart: was the motor cooling "
+        "hint": ("Your question 18 code is a good start. If a pond dies, look at the chart: was the motor cooling "
                  "down, or busy at the other pond? The toxic leak keeps going, so don't leave pond 1 too early."),
         "answer": (
             "while True:\n"
@@ -1578,6 +1613,11 @@ LEVELS = [
         "goal": goal_final,
     },
 ]
+# a starter of None means: start from the previous question's answer (and offer the student's own code)
+for _i, _lv in enumerate(LEVELS):
+    if _lv["starter"] is None:
+        _lv["starter"] = LEVELS[_i - 1]["answer"]
+        _lv.setdefault("carry", LEVELS[_i - 1]["id"])
 LEVELS_BY_ID = {lv["id"]: lv for lv in LEVELS}
 FINAL_LEVEL = LEVELS[-1]["id"]
 
@@ -1614,8 +1654,8 @@ const $ = (id) => document.getElementById(id);
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const esc = (s) => String(s).replace(/[&<>"]/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[ch]));
 const store = {
-  get(k, d) { try { const v = localStorage.getItem("pondrescue-18." + k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
-  set(k, v) { try { localStorage.setItem("pondrescue-18." + k, JSON.stringify(v)); } catch (e) {} },
+  get(k, d) { try { const v = localStorage.getItem("pondrescue-19." + k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem("pondrescue-19." + k, JSON.stringify(v)); } catch (e) {} },
 };
 function clockText(t) {
   const h = START_CLOCK + Math.floor(t + 1e-6);
@@ -1818,7 +1858,7 @@ $("levels").addEventListener("click", (e) => { const b = e.target.closest(".lv")
 // the pond functions: listed with each question because calling them isn't the Python skill
 const TOOLS = {
   pollution: ["pollution(x)", "reads pollution of pond x"],
-  wait: ["wait(x)", "waits x hours (3, 6, 9…)"],
+  wait: ["wait(x)", "waits x hours"],
   motor_on: ["motor_on()", "turns the aerator on"],
   motor_off: ["motor_off()", "turns the aerator off"],
   motor_temp: ["motor_temp()", "reads the motor's temperature (°C)"],
@@ -1847,7 +1887,7 @@ const FN_INFO = [
   ["motor_on", "motor_on()", "Starts the aerator. It cleans the pond the hose is in by about 1.5 an hour, and heats up 15°C an hour."],
   ["motor_off", "motor_off()", "Stops the aerator. The motor cools down 8°C an hour."],
   ["switch_to", "switch_to(x)", "Moves the air hose to pond 1 or 2. Takes 3 hours. Switch the motor off first!"],
-  ["wait", "wait(x)", "Waits x hours. The sensors only update every 3 hours, so x is 3, 6, 9…"],
+  ["wait", "wait(x)", "Waits x hours, e.g. <code>wait(3)</code>. Just <code>wait()</code> waits 3 hours."],
   ["print", "print(…)", "Shows text and numbers in the output."],
 ];
 function renderGuide() {
@@ -2686,7 +2726,7 @@ function drawFish(c, x, y, dir, tilt, i, phase, opts) {
 }
 function buoyPos(p, anim) {
   const pd = LAY.ponds[p];
-  return { x: pd.cx + pd.buoy * pd.rx, y: pd.cy + pd.ry * .34 + Math.sin(anim / 700 + p) * 1.4 };
+  return { x: pd.cx + pd.buoy * pd.rx, y: pd.cy + pd.ry * .48 + Math.sin(anim / 700 + p) * 1.4 };
 }
 function drawPond(c, p, f, now, anim, dt, rain) {
   const pd = LAY.ponds[p];
@@ -2934,21 +2974,27 @@ function readAge(p, now) {
   for (const q of FX.pings) if (q.pond === p) born = Math.max(born, q.born);
   return (now - born) / 1000;
 }
-function meterBox(p) { const pd = LAY.ponds[p]; return { x: pd.cx - 100, y: pd.cy - pd.ry - 76, w: 200, h: 52 }; }
+function meterBox(p) {
+  const pd = LAY.ponds[p], w = 176, bx = pd.cx + pd.buoy * pd.rx;
+  return { x: clamp(bx - w / 2, 8, W - w - 12), y: pd.cy + pd.ry * .48 + 22, w, h: 48 };
+}
 function drawMeter(c, p, f, now) {
   const dead = f["dead" + p], r = lastReading(p), age = readAge(p, now);
   const { x, y, w, h } = meterBox(p), maxV = 10;
   const flash = r && age < 1, pop = reduceMotion ? 1 : 1 + .14 * Math.max(0, 1 - age / .35);
+  // the cable from the buoy down to its reading
+  const sx = LAY.ponds[p].cx + LAY.ponds[p].buoy * LAY.ponds[p].rx;
+  c.beginPath(); c.moveTo(sx, y - 12); c.lineTo(sx, y); inkLine(c, 2.5);
   c.save(); c.translate(x + w / 2, y + h / 2); c.scale(pop, pop); c.translate(-w / 2, -h / 2);
   card(c, 0, 0, w, h, flash ? "#fff36b" : CREAM);
   c.fillStyle = INK; c.font = "700 12.5px 'Atkinson Hyperlegible', sans-serif";
   c.fillText((LAY.id === 1 ? "" : "POND " + p + " ") + (r ? "READING" : "SENSOR"), 10, 19);
   c.textAlign = "right"; c.font = "800 21px " + DISPLAY; c.fillStyle = dead ? "#d62f2f" : INK;
   c.fillText(dead ? "fish dead" : r ? Number(r.ret).toFixed(1) : "?", w - 10, 22); c.textAlign = "left";
-  const bx = 10, by = 31, bw = w - 20, bh = 11;
+  const bx = 10, by = 29, bw = w - 20, bh = 10;
   if (!r) {
     c.fillStyle = "#6e6a5e"; c.font = "italic 12.5px 'Atkinson Hyperlegible', sans-serif";
-    c.fillText("not read yet: call pollution(" + p + ")", bx, by + 10);
+    c.fillText("call pollution(" + p + ") to read it", bx, by + 10);
   } else {
     const k = clamp(Number(r.ret) / maxV, 0, 1) * (flash && !reduceMotion ? Math.min(1, age / .4) : 1), v = Number(r.ret);
     rr(c, bx, by, bw, bh, 5); c.fillStyle = "#efe6d2"; c.fill();
@@ -2958,17 +3004,10 @@ function drawMeter(c, p, f, now) {
   }
   c.restore();
 }
-function drawPondTag(c, p) {
-  if (LAY.id === 1) return;
-  const pd = LAY.ponds[p];
-  card(c, pd.cx - 36, pd.cy + pd.ry + 14, 72, 24, p === 1 ? "#bfe8ef" : "#ffd3e2", 7);
-  c.font = "800 15px " + DISPLAY; c.textAlign = "center"; c.fillStyle = INK;
-  c.fillText("Pond " + p, pd.cx, pd.cy + pd.ry + 31); c.textAlign = "left";
-}
 // where a call's label goes, and which way it points: [x, y, "above" | "below" | "right"]
 function anchorPos(a, anim) {
   const m = LAY.motor;
-  if (a[0] === "p") { const b = buoyPos(Number(a[1]), anim); return [b.x, b.y + 16, "below"]; }
+  if (a[0] === "p") { const b = buoyPos(Number(a[1]), anim); return [b.x, b.y - 44, "above"]; }
   if (m && a === "therm") return [m.x + m.w + 28, m.y - 66, "above"];
   if (m && a === "motor") return [m.x + m.w / 2 - 8, m.y - 12, "above"];
   if (m && a === "hose") return [m.x + m.w / 2, m.y + m.h + 46, "below"];
@@ -3018,18 +3057,11 @@ function drawPings(c, now, anim) {
   for (let i = FX.pings.length - 1; i >= 0; i--) {
     const q = FX.pings[i], age = (now - q.born) / 1000;
     if (age > 1.2 || !LAY.ponds[q.pond]) { FX.pings.splice(i, 1); continue; }
-    const b = buoyPos(q.pond, anim), pd = LAY.ponds[q.pond];
+    const b = buoyPos(q.pond, anim);
     for (let r = 0; r < 3; r++) {
       const k = age * 1.5 - r * .22; if (k < 0 || k > 1) continue;
       c.strokeStyle = rgb([31, 42, 54], (1 - k) * .9); c.lineWidth = 3;
       ell(c, b.x, b.y - 33, 9 + k * 46, 9 + k * 46); c.stroke();
-    }
-    // the reading travels up to the card
-    const top = meterBox(q.pond).y + 52;
-    for (let j = 0; j < 4; j++) {
-      const k = age / .55 - j * .15; if (k < 0 || k > 1) continue;
-      const x = b.x + (pd.cx - b.x) * k, y = b.y - 40 + (top - b.y + 40) * k;
-      ell(c, x, y, 5, 5); c.fillStyle = "#fff36b"; c.fill(); inkLine(c, 2);
     }
   }
 }
@@ -3042,12 +3074,16 @@ function drawHud(c, f) {
   c.fillText(clockText(f.tf), 52, 32); c.textBaseline = "alphabetic";
   const seg = PB.data && PB.segs[PB.seg];
   if (seg && seg.i >= 0 && seg.t1 > seg.t0) {
-    const e = PB.data.log[seg.i], k = clamp((PB.simT - seg.t0) / (seg.t1 - seg.t0), 0, 1);
-    card(c, 14, 56, 190, 24, SUN, 8);
-    c.fillStyle = INK; c.font = "700 12px 'JetBrains Mono', monospace"; c.textBaseline = "middle";
-    c.fillText(e.fn === "wait" ? "waiting" : "moving hose", 24, 68.5); c.textBaseline = "alphabetic";
-    rr(c, 116, 63, 80, 10, 5); c.fillStyle = CREAM; c.fill();
-    rr(c, 116, 63, Math.max(10, 80 * k), 10, 5); c.fillStyle = INK; c.fill();
+    const e = PB.data.log[seg.i], left = Math.max(1, Math.ceil(seg.t1 - PB.simT - 1e-6));
+    if (!FX.count || FX.count.n !== left || FX.count.seg !== seg) FX.count = { n: left, seg, born: frameNow };
+    const age = (frameNow - FX.count.born) / 1000, pop = reduceMotion ? 1 : 1 + .25 * Math.max(0, 1 - age / .3);
+    c.save(); c.translate(70, 112); c.scale(pop, pop);
+    card(c, -56, -50, 112, 100, SUN, 14);
+    c.fillStyle = INK; c.textAlign = "center"; c.textBaseline = "middle";
+    c.font = "700 12.5px 'Atkinson Hyperlegible', sans-serif"; c.fillText(e.fn === "wait" ? "waiting" : "moving hose", 0, -33);
+    c.font = "800 54px " + DISPLAY; c.fillText(String(left), 0, 6);
+    c.font = "700 12px 'Atkinson Hyperlegible', sans-serif"; c.fillText(left === 1 ? "hour" : "hours", 0, 38);
+    c.restore(); c.textAlign = "left"; c.textBaseline = "alphabetic";
   }
 }
 function drawIntro(c, now, anim) {
@@ -3159,7 +3195,7 @@ function drawScene(f, now, dt) {
   if (night > .01) { c.fillStyle = "rgba(30,30,90," + (.4 * night).toFixed(3) + ")"; c.fillRect(0, 0, W, H); }
   drawRain(c, rain, anim);
   drawParts(c, now, adt);
-  for (const p of ponds) { drawMeter(c, p, f, now); drawPondTag(c, p); if (SHOW.pipes) drawPipeLabel(c, p, f); }
+  for (const p of ponds) { drawMeter(c, p, f, now); if (SHOW.pipes) drawPipeLabel(c, p, f); }
   if (SHOW.motor && SHOW.therm && LAY.motor) drawThermo(c, f);
   if (f.switching && FX.sprayAt == null && LAY.motor) {
     const m = LAY.motor;
@@ -3287,6 +3323,12 @@ function drawChart(f) {
     c.strokeStyle = POND_COL[p]; c.lineWidth = 2.6; c.lineJoin = "round";
     c.beginPath(); pts.forEach(([px, py], i) => (i ? c.lineTo(px, py) : c.moveTo(px, py))); c.stroke();
     for (const [px, py] of pts) { c.fillStyle = "#fff"; c.strokeStyle = POND_COL[p]; c.lineWidth = 2.2; ell(c, px, py, 4.2, 4.2); c.fill(); c.stroke(); }
+    const age = readAge(p, frameNow);
+    if (age < 1) {
+      const [px, py] = pts[pts.length - 1], k = age;
+      c.strokeStyle = POND_COL[p]; c.globalAlpha = 1 - k; c.lineWidth = 2.5; ell(c, px, py, 5 + k * 16, 5 + k * 16); c.stroke(); c.globalAlpha = 1;
+      c.fillStyle = POND_COL[p]; ell(c, px, py, 6, 6); c.fill();
+    }
   }
   for (const e of PB.data.events) {
     if (e.t > upto + 1e-6) continue;

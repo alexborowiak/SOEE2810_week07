@@ -1,5 +1,5 @@
 """Checks every question still works: each question's answer (the one the page reveals) passes, its starter
-code fails, and the classic mistakes fail the way they should. Question 18, the final challenge, is tuned so
+code fails, and the classic mistakes fail the way they should. Question 19, the final challenge, is tuned so
 its answer only just survives (peak pollution about 7.7).
 
 Run:  python check_scenario.py
@@ -48,65 +48,76 @@ CHECKS = {
         ("starter", STARTER, "lose"),
         ("no_wait", "for i in range(4):\n    print(pollution(1))\n", "lose"),
         ("no_print", "for i in range(4):\n    x = pollution(1)\n    wait()\n", "lose"),
+        ("wait_5", "for i in range(4):\n    print(pollution(1))\n    wait(5)\n", "win"),
+        ("wait_zero", "for i in range(4):\n    print(pollution(1))\n    wait(0)\n", "lose"),
     ],
     4: [
+        ("answer", ANSWER, "win"),
+        ("starter", STARTER, "lose"),
+        ("no_list", "for i in range(4):\n    print(pollution(1))\n    wait(3)\n", "lose"),
+        ("print_in_loop", "readings = []\nfor i in range(4):\n    readings.append(pollution(1))\n    print(readings)\n    wait(3)\n", "win"),
+        ("one_reading", "readings = [pollution(1)]\nprint(readings)\n", "lose"),
+    ],
+    5: [
         ("answer", ANSWER, "win"),
         ("starter", STARTER, "lose"),
         ("list_only", "r = []\nfor i in range(8):\n    r.append(pollution(1))\n    wait()\nprint(r)\n", "lose"),
         ("no_wait", "r = []\nfor i in range(8):\n    r.append(pollution(1))\nprint(max(r))\nprint(sum(r) / len(r))\n", "lose"),
     ],
-    5: [
+    6: [
         ("answer", ANSWER, ("win", "win", "win")),
         ("starter", STARTER, ("lose", "win", "win")),
         ("always_on", "motor_on()\n", ("win", "lose", "lose")),
         ("greater_eq", "if pollution(1) >= 3:\n    motor_on()\n", ("win", "win", "lose")),
     ],
-    6: [
+    7: [
         ("answer", ANSWER, ("win", "win", "win")),
         ("starter", STARTER, ("lose", "win", "lose")),
         ("less_than", "if pollution(1) < 3:\n    motor_off()\n", ("win", "win", "lose")),
         ("always_off", "motor_off()\n", ("win", "lose", "win")),
         ("wrong_way", "if pollution(1) > 3:\n    motor_off()\n", ("lose", "lose", "lose")),
     ],
-    7: [
+    8: [
         ("answer", ANSWER, ("win", "win", "win")),
         ("starter", STARTER, ("lose", "lose", "lose")),
         ("wrong_order", 'level = pollution(1)\nif level > 3:\n    print("warning")\nelif level > 6:\n    print("danger")\nelse:\n    print("ok")\n', ("lose", "win", "win")),
         ("two_ifs", 'level = pollution(1)\nif level > 6:\n    print("danger")\nif level > 3:\n    print("warning")\nelse:\n    print("ok")\n', ("lose", "win", "win")),
     ],
-    8: [
+    9: [
         ("answer", ANSWER, ("win", "win", "win")),
         ("starter", STARTER, ("lose", "lose", "lose")),
         ("or_not_and", 'if pollution(1) <= 3 or pollution(2) <= 3:\n    print("all clear")\nelse:\n    print("check ponds")\n', ("win", "lose", "lose")),
         ("half_compare", 'if pollution(1) and pollution(2) <= 3:\n    print("all clear")\nelse:\n    print("check ponds")\n', ("win", "win", "lose")),
         ("pond1_only", 'if pollution(1) <= 3:\n    print("all clear")\nelse:\n    print("check ponds")\n', ("win", "lose", "win")),
     ],
-    9: [
+    10: [
         ("answer", ANSWER, ("win", "win", "win")),
         ("starter", STARTER, ("lose", "lose", "lose")),
         ("and_not_or", 'if pollution(1) > 6 and pollution(2) > 6:\n    print("alarm")\nelse:\n    print("fine")\n', ("lose", "lose", "win")),
         ("pond1_only", 'if pollution(1) > 6:\n    print("alarm")\nelse:\n    print("fine")\n', ("win", "lose", "win")),
     ],
-    10: [
+    11: [
         ("answer", ANSWER, ("win", "win")),
         ("starter", STARTER, ("lose", "lose")),
         ("always_pond2", "switch_to(2)\nmotor_on()\n", ("lose", "win")),
         ("never_switch", "motor_on()\n", ("win", "lose")),
     ],
-    11: [
+    12: [
         ("answer", ANSWER, ("win", "win")),
         ("starter", STARTER, ("lose", "lose")),
         ("hard_coded", "wait(15)\nmotor_on()\n", ("win", "lose")),
+        ("hourly", "while pollution(1) <= 3:\n    wait(1)\nmotor_on()\n", ("win", "win")),
+        ("zero_wait_loop", "while pollution(1) <= 3:\n    wait(0)\nmotor_on()\n", ("frozen", "frozen")),
         ("if_not_while", "if pollution(1) <= 3:\n    wait()\nmotor_on()\n", ("lose", "lose")),
         ("no_wait", "while pollution(1) <= 3:\n    pass\nmotor_on()\n", ("frozen", "frozen")),
     ],
-    12: [
+    13: [
         ("answer", ANSWER, ("win", "win")),
         ("starter", STARTER, ("lose", "win")),
         ("hard_coded", "motor_on()\nwait()\nmotor_off()\n", ("win", "lose")),
         ("check_after", "motor_on()\nwait()\nwhile pollution(1) > 3:\n    wait()\nmotor_off()\n", ("win", "lose")),
     ],
-    13: [
+    14: [
         ("answer", ANSWER, "win"),
         ("starter", STARTER, "lose"),
         ("never_off", "while True:\n    if pollution(1) > 3:\n        motor_on()\n    wait()\n", "lose"),
@@ -114,34 +125,34 @@ CHECKS = {
         ("no_loop", "if pollution(1) > 3:\n    motor_on()\n", "lose"),
         ("no_wait", "while True:\n    if pollution(1) > 3:\n        motor_on()\n", "frozen"),
     ],
-    14: [
+    15: [
         ("answer", ANSWER, ("win", "win", "win")),
         ("starter", STARTER, ("lose", "win", "win")),
         ("or_not_and", "if pollution(1) > 3 or motor_temp() < 50:\n    motor_on()\n", ("win", "lose", "lose")),
         ("no_temp", "if pollution(1) > 3:\n    motor_on()\n", ("win", "lose", "win")),
     ],
-    15: [
+    16: [
         ("answer", ANSWER, "win"),
         ("starter", STARTER, "lose"),
-        ("q13_code", LEVEL[13]["answer"], "lose"),
+        ("q14_code", LEVEL[14]["answer"], "lose"),
         ("hot70", COOLDOWN.replace("> 50", "> 70"), "lose"),
         ("nothing", "while True:\n    wait()\n", "lose"),
     ],
-    16: [
+    17: [
         ("answer", ANSWER, "win"),
         ("starter", STARTER, "lose"),
         ("pond1_inside", "def report(pond):\n    print(pollution(1))\n\nreport(1)\nreport(2)\n", "lose"),
         ("one_call", "def report(pond):\n    print(pollution(pond))\n\nreport(1)\n", "lose"),
         ("no_function", "print(pollution(1))\nprint(pollution(2))\n", "lose"),
     ],
-    17: [
+    18: [
         ("answer", ANSWER, "win"),
         ("starter", STARTER, "lose"),
         ("pond1_only", COOLDOWN, "lose"),
-        ("no_function", LEVEL[18]["answer"], "lose"),
-        ("no_motor_off", LEVEL[17]["answer"].replace("    motor_off()\n\nwhile", "\nwhile"), "sprayed"),
+        ("no_function", LEVEL[19]["answer"], "lose"),
+        ("no_motor_off", LEVEL[18]["answer"].replace("    motor_off()\n\nwhile", "\nwhile"), "sprayed"),
     ],
-    18: [
+    19: [
         ("answer", ANSWER, "win"),
         ("starter", STARTER, "lose"),
         ("nothing", "\nwhile True:\n    wait()\n", "lose"),
@@ -160,7 +171,7 @@ while True:
         motor_off()
     wait()
 """, "win"),
-        ("q17_answer", LEVEL[17]["answer"], "win"),
+        ("q18_answer", LEVEL[18]["answer"], "win"),
         ("no_cooldown", """
 while True:
     for pond in [1, 2]:
